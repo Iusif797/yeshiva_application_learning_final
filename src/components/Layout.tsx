@@ -69,11 +69,11 @@ export default function Layout({ children }: LayoutProps) {
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (
-                {user.role === 'rabbi' ? (
+                  user.role === 'rabbi' ? (
                     <Users size={20} className="text-white" />
-                ) : (
+                  ) : (
                     <User size={20} className="text-white" />
-                )}
+                  )
                 )}
               </div>
               <div>

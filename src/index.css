@@ -263,6 +263,62 @@ html {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+/* Sidebar animations */
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.sidebar-enter {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.sidebar-exit {
+  animation: slideOutLeft 0.3s ease-out;
+}
+
+/* Premium sidebar effects */
+.sidebar-backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Smooth hover effects for sidebar items */
+.sidebar-item {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-item:hover {
+  transform: translateX(4px);
+}
+
+/* Premium gradient borders */
+.gradient-border {
+  position: relative;
+  background: linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4);
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 /* Improved toggle switches */
 .toggle-switch {
   position: relative;

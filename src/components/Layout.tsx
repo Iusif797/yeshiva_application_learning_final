@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Book, User, Users, Settings } from 'lucide-react';
+import { Book, User, Users, Settings, Menu } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import NotificationCenter from './NotificationCenter';
 import OfflineIndicator from './OfflineIndicator';
+import SidebarMenu from './SidebarMenu';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,6 +15,7 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const { darkMode } = useTheme();
   const { user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems = [
     { path: '/', icon: Book, label: 'Курсы' },
@@ -57,6 +60,16 @@ export default function Layout({ children }: LayoutProps) {
         }`}>
           <div className="flex items-center justify-between max-w-screen-xl mx-auto">
             <div className="flex items-center">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className={`p-2 rounded-xl mr-3 transition-colors ${
+                  darkMode 
+                    ? 'hover:bg-slate-700 text-slate-400 hover:text-white' 
+                    : 'hover:bg-gray-100 text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                <Menu size={20} />
+              </button>
               <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mr-3 sm:mr-4 shadow-lg ${
                 user.role === 'rabbi' 
                   ? 'bg-gradient-to-br from-purple-500 to-purple-600' 
@@ -105,6 +118,11 @@ export default function Layout({ children }: LayoutProps) {
       </main>
       
       <OfflineIndicator />
+      
+      <SidebarMenu 
+        isOpen={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)} 
+      />
       
       <nav className={`fixed bottom-0 left-0 right-0 border-t backdrop-blur-lg shadow-2xl mobile-nav safe-area-bottom ${
         darkMode 

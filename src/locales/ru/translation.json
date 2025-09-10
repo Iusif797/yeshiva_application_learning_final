@@ -1,0 +1,25 @@
+{
+    "settings": {
+        "title": "Настройки",
+        "profile": "Профиль",
+        "name": "Имя",
+        "email": "Электронная почта",
+        "nativeLanguage": "Родной язык",
+        "interfaceLanguage": "Язык интерфейса",
+        "studyStreak": "Ударный режим",
+        "totalLessons": "Всего уроков",
+        "knownWords": "Изучено слов",
+        "editProfile": "Редактировать профиль",
+        "cancel": "Отмена",
+        "save": "Сохранить",
+        "preferences": "Предпочтения",
+        "darkMode": "Тёмный режим",
+        "notifications": "Уведомления",
+        "autoPlayAudio": "Автовоспроизведение аудио",
+        "rtlMode": "Режим справа налево (RTL)",
+        "logout": "Выйти",
+        "logoutConfirmation": "Вы уверены, что хотите выйти?",
+        "languageChangedTo": "Язык изменен на {{language}}",
+        "settingsSaved": "Настройки сохранены!"
+    }
+}

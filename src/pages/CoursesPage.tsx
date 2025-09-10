@@ -17,12 +17,14 @@ export default function CoursesPage() {
     try {
       const data = await courseService.getAll();
       if (data.length > 0) {
+        console.log('%cУспех! Данные загружены из Supabase:', 'color: #22c55e; font-size: 16px; font-weight: bold;', data);
         setCourses(data);
       } else {
+        console.warn('%cВнимание! База данных Supabase пуста. Используются демо-данные.', 'color: #eab308; font-size: 16px; font-weight: bold;');
         setCourses(demoData.courses);
       }
     } catch (error) {
-      console.warn('Ошибка загрузки курсов, используем демо данные:', error);
+      console.error('%cОшибка! Не удалось подключиться к Supabase. Используются демо-данные:', 'color: #ef4444; font-size: 16px; font-weight: bold;', error);
       setCourses(demoData.courses);
     } finally {
       setLoading(false);

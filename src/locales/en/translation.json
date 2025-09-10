@@ -1,0 +1,25 @@
+{
+    "settings": {
+        "title": "Settings",
+        "profile": "Profile",
+        "name": "Name",
+        "email": "Email",
+        "nativeLanguage": "Native Language",
+        "interfaceLanguage": "Interface Language",
+        "studyStreak": "Study Streak",
+        "totalLessons": "Total Lessons",
+        "knownWords": "Known Words",
+        "editProfile": "Edit Profile",
+        "cancel": "Cancel",
+        "save": "Save",
+        "preferences": "Preferences",
+        "darkMode": "Dark Mode",
+        "notifications": "Notifications",
+        "autoPlayAudio": "Auto-play audio",
+        "rtlMode": "Right-to-Left (RTL) Mode",
+        "logout": "Logout",
+        "logoutConfirmation": "Are you sure you want to logout?",
+        "languageChangedTo": "Language changed to {{language}}",
+        "settingsSaved": "Settings saved!"
+    }
+}

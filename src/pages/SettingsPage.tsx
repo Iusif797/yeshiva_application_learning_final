@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { User, Globe, Palette, Bell, Shield, LogOut, ChevronRight, Volume2, BookOpen, Save, Check } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
- 
+import { User, Settings, Sun, Moon, LogOut, Edit, Check, X, Bell, Volume2, ChevronDown, BookOpen, BarChart2, Star } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 interface UserProfile {
   name: string;
   email: string;
@@ -14,6 +15,7 @@ interface UserProfile {
 }
 
 export default function SettingsPage() {
+  const { t, i18n } = useTranslation();
   const { darkMode, toggleDarkMode } = useTheme();
   const { user, logout } = useAuth();
   const [notifications, setNotifications] = useState(true); // This state is still local for notifications
@@ -22,7 +24,7 @@ export default function SettingsPage() {
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showLanguageSelect, setShowLanguageSelect] = useState(false);
   const [savedMessage, setSavedMessage] = useState('');
-  
+
   const [userProfile, setUserProfile] = useState<UserProfile>({
     name: user?.name || 'Давид Коэн',
     email: user?.email || 'david.cohen@example.com',
@@ -81,46 +83,34 @@ export default function SettingsPage() {
       rtlMode
     };
     localStorage.setItem('appSettings', JSON.stringify(settings));
-    showSavedMessage('Настройки сохранены!');
+    showSavedMessage(t('settings.settingsSaved'));
   };
 
-  const saveProfile = () => {
+  const handleSaveProfile = () => {
     setUserProfile(tempProfile);
     localStorage.setItem('userProfile', JSON.stringify(tempProfile));
     setShowProfileEdit(false);
-    showSavedMessage('Профиль обновлен!');
+    showSavedMessage(t('settings.settingsSaved'));
   };
 
   const showSavedMessage = (message: string) => {
     setSavedMessage(message);
-    setTimeout(() => setSavedMessage(''), 3000);
+    setTimeout(() => setSavedMessage(''), 2000);
   };
 
-  const handleLanguageChange = (language: string) => {
-    const selectedLang = languages.find(lang => lang.name === language);
-    setTempProfile({ 
-      ...tempProfile, 
-      nativeLanguage: language,
-      nativeLanguageCode: selectedLang?.code || 'ru'
-    });
-    setShowLanguageSelect(false);
-    
-    // Update user profile and save to localStorage
-    const updatedProfile = { 
-      ...userProfile, 
-      nativeLanguage: language,
-      nativeLanguageCode: selectedLang?.code || 'ru'
-    };
-    setUserProfile(updatedProfile);
-    localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
-    
-    // Save interface language to localStorage
-    localStorage.setItem('interfaceLanguage', language);
-    showSavedMessage(`Язык изменен на ${language}`);
+  const handleLanguageChange = (languageCode: string) => {
+    const selectedLang = languages.find(lang => lang.code === languageCode);
+    if (selectedLang) {
+      i18n.changeLanguage(languageCode);
+      // We are not changing the nativeLanguage in the profile here,
+      // just the interface language.
+      setShowLanguageSelect(false);
+      showSavedMessage(t('settings.languageChangedTo', { language: selectedLang.name }));
+    }
   };
 
   const handleLogout = () => {
-    if (confirm('Вы уверены, что хотите выйти?')) {
+    if (confirm(t('settings.logoutConfirmation'))) {
       logout();
     }
   };
@@ -141,371 +131,191 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className={`p-6 pt-16 min-h-screen ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-      {/* Success Message */}
+    <div className={`p-6 pt-16 min-h-screen ${darkMode ? 'bg-slate-900 text-white' : 'bg-gray-50 text-gray-900'} transition-colors duration-300`}>
+      {/* Saved Message Popup */}
       {savedMessage && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg z-50 flex items-center">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg z-50 flex items-center">
           <Check size={20} className="mr-2" />
           {savedMessage}
         </div>
       )}
 
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-          Настройки
-        </h1>
-        <p className={`text-lg ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>Настройте свой опыт обучения</p>
-      </div>
+      <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{t('settings.title')}</h1>
 
-      {/* Profile Section */}
-      <div className="mb-8">
-        <h2 className={`text-xl font-bold mb-6 px-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-          {(localStorage.getItem('interfaceLanguage') || 'Русский') === 'English' ? 'Profile' : 
-           (localStorage.getItem('interfaceLanguage') || 'Русский') === 'עברית' ? 'פרופיל' : 'Профиль'}
-        </h2>
-        
-        <div className={`rounded-2xl p-6 border shadow-xl ${
-          darkMode 
-            ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600' 
-            : 'bg-white border-gray-200'
-        }`}>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-              <User size={32} className="text-white" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Left Column: Profile */}
+        <div className="md:col-span-1">
+          <div className={`p-6 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-white'} shadow-lg`}>
+            <div className="flex items-center mb-6">
+              <User size={28} className="mr-4 text-blue-400" />
+              <h2 className="text-2xl font-semibold">{t('settings.profile')}</h2>
             </div>
-            <div className="flex-1">
-              <div className={`font-bold text-xl break-words ${darkMode ? 'text-white' : 'text-gray-900'}`}>{userProfile.name}</div>
-              <div className={`break-all text-sm sm:text-base ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>{userProfile.email}</div>
-              <div className={`text-xs sm:text-sm mt-1 flex flex-wrap gap-2 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                <span>{userProfile.studyStreak} дней подряд</span>
-                <span>•</span>
-                <span>{userProfile.totalLessons} уроков</span>
-                <span>•</span>
-                <span>{userProfile.knownWords} слов</span>
-              </div>
-            </div>
-            <div className="w-full sm:w-auto">
-              <button 
-                onClick={() => setShowProfileEdit(!showProfileEdit)}
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition-colors font-semibold text-sm"
-              >
-                Редактировать
-              </button>
-            </div>
-          </div>
 
-          {/* Mobile-friendly stats */}
-          <div className="grid grid-cols-3 gap-2 sm:hidden mb-4">
-            <div className={`text-center p-3 rounded-xl ${darkMode ? 'bg-slate-700/50' : 'bg-gray-100'}`}>
-              <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{userProfile.studyStreak}</div>
-              <div className={`text-xs ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>дней</div>
-            </div>
-            <div className={`text-center p-3 rounded-xl ${darkMode ? 'bg-slate-700/50' : 'bg-gray-100'}`}>
-              <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{userProfile.totalLessons}</div>
-              <div className={`text-xs ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>уроков</div>
-            </div>
-            <div className={`text-center p-3 rounded-xl ${darkMode ? 'bg-slate-700/50' : 'bg-gray-100'}`}>
-              <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{userProfile.knownWords}</div>
-              <div className={`text-xs ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>слов</div>
-            </div>
-          </div>
-
-          {/* Desktop stats - hidden on mobile */}
-          <div className="hidden sm:block">
-            <div className={`text-sm mt-1 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                {userProfile.studyStreak} дней подряд • {userProfile.totalLessons} уроков • {userProfile.knownWords} слов
-            </div>
-          </div>
-
-          {showProfileEdit && (
-            <div className={`border-t pt-6 space-y-4 ${darkMode ? 'border-slate-600' : 'border-gray-200'}`}>
-              <div>
-                <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>Имя</label>
-                <input
-                  type="text"
-                  value={tempProfile.name}
-                  onChange={(e) => setTempProfile({ ...tempProfile, name: e.target.value })}
-                  className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors ${
-                    darkMode 
-                      ? 'bg-slate-700 border-slate-600 text-white' 
-                      : 'bg-white border-gray-300 text-gray-900'
-                  }`}
-                />
-              </div>
-              <div>
-                <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>Email</label>
-                <input
-                  type="email"
-                  value={tempProfile.email}
-                  onChange={(e) => setTempProfile({ ...tempProfile, email: e.target.value })}
-                  className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors ${
-                    darkMode 
-                      ? 'bg-slate-700 border-slate-600 text-white' 
-                      : 'bg-white border-gray-300 text-gray-900'
-                  }`}
-                />
-              </div>
-              <div className="flex gap-3">
-                <button 
-                  onClick={saveProfile}
-                  className="flex items-center bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl transition-colors font-semibold"
-                >
-                  <Save size={18} className="mr-2" />
-                  Сохранить
-                </button>
-                <button 
-                  onClick={() => {
-                    setTempProfile(userProfile);
-                    setShowProfileEdit(false);
-                  }}
-                  className={`px-6 py-3 rounded-xl transition-colors font-semibold ${
-                    darkMode 
-                      ? 'bg-slate-600 hover:bg-slate-700 text-white' 
-                      : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
-                  }`}
-                >
-                  Отмена
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Learning Preferences */}
-      <div className="mb-8">
-        <h2 className={`text-xl font-bold mb-6 px-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Настройки обучения</h2>
-        
-        <div className="space-y-4">
-          <div className={`rounded-2xl p-6 border shadow-xl ${
-            darkMode 
-              ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600' 
-              : 'bg-white border-gray-200'
-          }`}>
-            <div className="flex items-center">
-              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-                <Globe size={28} className="text-white" />
-              </div>
-              <div className="flex-1">
-                <div className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>Родной язык</div>
-                <div className={`flex items-center ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>
-                  <span className="mr-2">{languages.find(l => l.name === userProfile.nativeLanguage)?.flag}</span>
-                  {userProfile.nativeLanguage}
+            {showProfileEdit ? (
+              // Edit Profile Form
+              <div className="space-y-4">
+                <div>
+                  <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>{t('settings.name')}</label>
+                  <input
+                    type="text"
+                    value={tempProfile.name}
+                    onChange={(e) => setTempProfile({ ...tempProfile, name: e.target.value })}
+                    className={`w-full px-4 py-2 rounded-lg border-2 ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-100 border-gray-200'} focus:outline-none focus:border-blue-500`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>{t('settings.email')}</label>
+                  <input
+                    type="email"
+                    value={tempProfile.email}
+                    onChange={(e) => setTempProfile({ ...tempProfile, email: e.target.value })}
+                    className={`w-full px-4 py-2 rounded-lg border-2 ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-100 border-gray-200'} focus:outline-none focus:border-blue-500`}
+                  />
+                </div>
+                {/* Native Language is not editable here anymore, it's part of registration */}
+                <div className="flex justify-end space-x-3 mt-4">
+                  <button onClick={() => setShowProfileEdit(false)} className={`px-4 py-2 rounded-lg font-semibold transition-colors ${darkMode ? 'bg-slate-600 hover:bg-slate-500' : 'bg-gray-200 hover:bg-gray-300'}`}>
+                    <X size={18} className="inline-block mr-2" />{t('settings.cancel')}
+                  </button>
+                  <button onClick={handleSaveProfile} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                    <Check size={18} className="inline-block mr-2" />{t('settings.save')}
+                  </button>
                 </div>
               </div>
-              <button 
-                onClick={() => setShowLanguageSelect(!showLanguageSelect)}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl transition-colors font-semibold"
-              >
-                Изменить
-              </button>
-            </div>
-
-            {showLanguageSelect && (
-              <div className={`mt-6 border-t pt-6 ${darkMode ? 'border-slate-600' : 'border-gray-200'}`}>
-                <div className="grid grid-cols-2 gap-3">
-                  {languages.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => handleLanguageChange(lang.name)}
-                      className={`p-3 rounded-xl border transition-colors font-semibold ${
-                        userProfile.nativeLanguage === lang.name
-                          ? 'bg-green-600 border-green-500 text-white shadow-lg'
-                          : darkMode
-                            ? 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'
-                            : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      <span className="mr-2">{lang.flag}</span>
-                      <span>{lang.name}</span>
-                    </button>
-                  ))}
+            ) : (
+              // Display Profile Info
+              <div className="space-y-4">
+                <div className="flex items-center">
+                  <img src={`https://i.pravatar.cc/150?u=${user?.email}`} alt="Avatar" className="w-20 h-20 rounded-full mr-6 border-4 border-blue-400" />
+                  <div>
+                    <p className="text-xl font-bold">{userProfile.name}</p>
+                    <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>{userProfile.email}</p>
+                  </div>
                 </div>
+
+                <hr className={darkMode ? 'border-slate-700' : 'border-gray-200'} />
+
+                <div className="space-y-3 text-sm">
+                  <p><strong>{t('settings.nativeLanguage')}:</strong> {userProfile.nativeLanguage}</p>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <Star className="mx-auto mb-1 text-yellow-400" size={24} />
+                      <p className="font-bold text-lg">{userProfile.studyStreak}</p>
+                      <p className={`${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>{t('settings.studyStreak')}</p>
+                    </div>
+                    <div>
+                      <BookOpen className="mx-auto mb-1 text-green-400" size={24} />
+                      <p className="font-bold text-lg">{userProfile.totalLessons}</p>
+                      <p className={`${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>{t('settings.totalLessons')}</p>
+                    </div>
+                    <div>
+                      <BarChart2 className="mx-auto mb-1 text-purple-400" size={24} />
+                      <p className="font-bold text-lg">{userProfile.knownWords}</p>
+                      <p className={`${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>{t('settings.knownWords')}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <button onClick={() => setShowProfileEdit(true)} className={`w-full mt-4 px-4 py-2 rounded-lg font-semibold flex items-center justify-center transition-colors ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-200 hover:bg-gray-300'}`}>
+                  <Edit size={16} className="mr-2" /> {t('settings.editProfile')}
+                </button>
               </div>
             )}
           </div>
-
-          <div className={`flex items-center rounded-2xl p-6 border shadow-xl ${
-            darkMode 
-              ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600' 
-              : 'bg-white border-gray-200'
-          }`}>
-            <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-              <Palette size={28} className="text-white" />
-            </div>
-            <div className="flex-1">
-              <div className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>Темная тема</div>
-              <div className={`${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>Использовать темную тему</div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={darkMode} // Use darkMode from context
-                onChange={toggleDarkMode} // Use toggleDarkMode from context
-                className="sr-only peer"
-              />
-              <div className={`w-14 h-8 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-7 after:w-7 after:transition-all peer-checked:bg-blue-600 shadow-lg ${
-                darkMode ? 'bg-slate-600' : 'bg-gray-300'
-              }`}></div>
-            </label>
-          </div>
-
-          <div className={`flex items-center rounded-2xl p-6 border shadow-xl ${
-            darkMode 
-              ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600' 
-              : 'bg-white border-gray-200'
-          }`}>
-            <div className="w-14 h-14 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-              <span className="text-blue-400 font-bold text-2xl">א</span>
-            </div>
-            <div className="flex-1">
-              <div className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>Направление текста RTL</div>
-              <div className={`${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>Чтение справа налево</div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={rtlMode}
-                onChange={(e) => toggleSetting('rtlMode', e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className={`w-14 h-8 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-7 after:w-7 after:transition-all peer-checked:bg-blue-600 shadow-lg ${
-                darkMode ? 'bg-slate-600' : 'bg-gray-300'
-              }`}></div>
-            </label>
-          </div>
-
-          <div className={`flex items-center rounded-2xl p-6 border shadow-xl ${
-            darkMode 
-              ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600' 
-              : 'bg-white border-gray-200'
-          }`}>
-            <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-              <Volume2 size={28} className="text-white" />
-            </div>
-            <div className="flex-1">
-              <div className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>Автовоспроизведение аудио</div>
-              <div className={`${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>Запускать аудио автоматически</div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={autoPlay}
-                onChange={(e) => toggleSetting('autoPlay', e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className={`w-14 h-8 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-7 after:w-7 after:transition-all peer-checked:bg-blue-600 shadow-lg ${
-                darkMode ? 'bg-slate-600' : 'bg-gray-300'
-              }`}></div>
-            </label>
-          </div>
         </div>
-      </div>
 
-      {/* Notifications */}
-      <div className="mb-8">
-        <h2 className={`text-xl font-bold mb-6 px-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Уведомления</h2>
-        
-        <div className={`flex items-center rounded-2xl p-6 border shadow-xl ${
-          darkMode 
-            ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600' 
-            : 'bg-white border-gray-200'
-        }`}>
-          <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-            <Bell size={28} className="text-white" />
-          </div>
-          <div className="flex-1">
-            <div className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>Push-уведомления</div>
-            <div className={`${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>Напоминания об учебе и обновления</div>
-          </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={notifications}
-              onChange={(e) => toggleSetting('notifications', e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className={`w-14 h-8 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-7 after:w-7 after:transition-all peer-checked:bg-blue-600 shadow-lg ${
-              darkMode ? 'bg-slate-600' : 'bg-gray-300'
-            }`}></div>
-          </label>
-        </div>
-      </div>
+        {/* Right Column: Settings */}
+        <div className="md:col-span-2">
+          <div className={`p-6 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-white'} shadow-lg`}>
+            <div className="flex items-center mb-6">
+              <Settings size={28} className="mr-4 text-purple-400" />
+              <h2 className="text-2xl font-semibold">{t('settings.preferences')}</h2>
+            </div>
 
-      {/* Account */}
-      <div className="mb-8">
-        <h2 className={`text-xl font-bold mb-6 px-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Аккаунт</h2>
-        
-        <div className="space-y-4">
-          <button 
-            onClick={() => alert('Настройки безопасности:\n• Двухфакторная аутентификация: Включена\n• Последний вход: Сегодня в 18:30\n• Активные сессии: 2 устройства')}
-            className={`w-full flex items-center rounded-2xl p-6 border transition-all duration-300 shadow-xl ${
-              darkMode 
-                ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600 hover:from-slate-750 hover:to-slate-850 hover:shadow-purple-500/10 hover:border-purple-500/30' 
-                : 'bg-white border-gray-200 hover:bg-gray-50 hover:shadow-purple-500/10 hover:border-purple-300'
-            }`}
-          >
-            <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-              <Shield size={28} className="text-white" />
-            </div>
-            <div className="flex-1 text-left">
-              <div className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>Приватность и безопасность</div>
-              <div className={`${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>Управление безопасностью аккаунта</div>
-            </div>
-            <ChevronRight size={24} className={`${darkMode ? 'text-slate-500' : 'text-gray-400'}`} />
-          </button>
+            <div className="space-y-6">
+              {/* Interface Language */}
+              <div className="relative">
+                <label className={`block text-lg font-semibold mb-2 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>{t('settings.interfaceLanguage')}</label>
+                <button
+                  onClick={() => setShowLanguageSelect(!showLanguageSelect)}
+                  className={`w-full text-left flex justify-between items-center px-4 py-3 rounded-xl border-2 transition-all duration-200 ${darkMode
+                    ? 'bg-slate-700 border-slate-600 text-white focus:border-blue-500'
+                    : 'bg-white border-gray-200 text-gray-900 focus:border-blue-500'
+                    }`}
+                >
+                  <span>{languages.find(l => l.code === i18n.language)?.name || 'Select Language'}</span>
+                  <ChevronDown size={20} className={`transition-transform ${showLanguageSelect ? 'rotate-180' : ''}`} />
+                </button>
 
-          <button 
-            onClick={handleLogout}
-            className={`w-full flex items-center rounded-2xl p-6 border transition-all duration-300 shadow-xl ${
-              darkMode 
-                ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600 hover:from-slate-750 hover:to-slate-850 hover:shadow-red-500/10 hover:border-red-500/30' 
-                : 'bg-white border-gray-200 hover:bg-gray-50 hover:shadow-red-500/10 hover:border-red-300'
-            }`}
-          >
-            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-              <LogOut size={28} className="text-white" />
-            </div>
-            <div className="flex-1 text-left">
-              <div className={`font-bold text-lg ${darkMode ? 'text-red-400' : 'text-red-600'}`}>Выйти</div>
-              <div className={`${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>Выйти из аккаунта</div>
-            </div>
-          </button>
-        </div>
-      </div>
+                {showLanguageSelect && (
+                  <div className={`absolute z-10 w-full mt-2 rounded-xl shadow-lg ${darkMode ? 'bg-slate-700' : 'bg-white'} border ${darkMode ? 'border-slate-600' : 'border-gray-200'}`}>
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => handleLanguageChange(lang.code)}
+                        className="w-full text-left px-4 py-3 hover:bg-blue-500/10"
+                      >
+                        {lang.flag} {lang.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-      {/* Footer */}
-      <div className="text-center py-8 border-t border-slate-600 mt-8">
-        <div className="max-w-md mx-auto">
-          <div className="flex items-center justify-center mb-4">
-            <BookOpen size={20} className={`mr-2 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-            <span className={`text-base font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-              Приложение изучения иврита
-            </span>
-          </div>
-          
-          <div className={`text-sm mb-3 ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>
-            Версия 1.0.0
-          </div>
-          
-          <div className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
-            Создано 
-            <a 
-              href="https://it-enterprise.cz" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className={`ml-1 font-bold transition-colors ${
-                darkMode 
-                  ? 'text-blue-400 hover:text-blue-300' 
-                  : 'text-blue-600 hover:text-blue-700'
-              }`}
-            >
-              it-enterprise.cz
-            </a>
-          </div>
-          
-          <div className={`text-xs mt-2 ${darkMode ? 'text-slate-500' : 'text-gray-500'}`}>
-            © 2024 IT Enterprise. Все права защищены.
+              {/* Dark Mode */}
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  {darkMode ? <Moon className="mr-3 text-yellow-400" size={22} /> : <Sun className="mr-3 text-yellow-500" size={22} />}
+                  <span className="text-lg font-semibold">{t('settings.darkMode')}</span>
+                </div>
+                <button onClick={toggleDarkMode} className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${darkMode ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                  <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${darkMode ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+
+              {/* Notifications */}
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  <Bell className="mr-3 text-green-500" size={22} />
+                  <span className="text-lg font-semibold">{t('settings.notifications')}</span>
+                </div>
+                <button onClick={() => toggleSetting('notifications', !notifications)} className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${notifications ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                  <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${notifications ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+
+              {/* Auto-play Audio */}
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  <Volume2 className="mr-3 text-red-500" size={22} />
+                  <span className="text-lg font-semibold">{t('settings.autoPlayAudio')}</span>
+                </div>
+                <button onClick={() => toggleSetting('autoPlay', !autoPlay)} className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${autoPlay ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                  <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${autoPlay ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+
+              {/* RTL Mode */}
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  <BookOpen className="mr-3 text-indigo-500" size={22} />
+                  <span className="text-lg font-semibold">{t('settings.rtlMode')}</span>
+                </div>
+                <button onClick={() => toggleSetting('rtlMode', !rtlMode)} className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${rtlMode ? 'bg-blue-600' : 'bg-gray-300'}`}>
+                  <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${rtlMode ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+
+              {/* Logout Button */}
+              <div className="pt-4 border-t-2 border-dashed_custom">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center px-4 py-3 bg-red-600/10 text-red-500 rounded-xl font-bold hover:bg-red-600/20 transition-colors"
+                >
+                  <LogOut size={20} className="mr-3" /> {t('settings.logout')}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

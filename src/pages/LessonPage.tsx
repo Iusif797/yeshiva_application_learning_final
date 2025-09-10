@@ -78,14 +78,14 @@ export default function LessonPage() {
 
   const updateWordProgress = async (level: 'learning' | 'known', isCorrect: boolean) => {
     if (!user) return;
-    
+
     try {
       const currentWord = words[currentWordIndex];
       const gematria = calculateGematria(currentWord);
-      
+
       // Get or create word
       const word = await wordService.getOrCreate(currentWord, gematria);
-      
+
       // Update student word progress
       const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
       if (userProfile.id) {
@@ -103,20 +103,22 @@ export default function LessonPage() {
 
   const completeLesson = async () => {
     if (!user || !lesson) return;
-    
+
     setShowQuiz(true);
   };
 
+  const [toast, setToast] = useState<string | null>(null);
+
   const handleRequestTranslation = async () => {
     if (!user) return;
-    
+
     try {
       const currentWord = words[currentWordIndex];
       const gematria = calculateGematria(currentWord);
-      
+
       // Get or create word
       const word = await wordService.getOrCreate(currentWord, gematria);
-      
+
       // Create translation request
       const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
       if (userProfile.id) {
@@ -125,21 +127,23 @@ export default function LessonPage() {
           word.id,
           lesson?.id
         );
-        alert(`Запрос на перевод слова "${currentWord}" отправлен раввину!`);
+        setToast(`Запрос на перевод слова "${currentWord}" отправлен раввину!`);
+        setTimeout(() => setToast(null), 3000);
       }
     } catch (error) {
       console.error('Error requesting translation:', error);
-      alert(`Запрос на перевод слова "${words[currentWordIndex]}" отправлен раввину!`);
+      setToast(`Запрос на перевод слова "${words[currentWordIndex]}" отправлен раввину!`);
+      setTimeout(() => setToast(null), 3000);
     }
   };
 
   const handleQuizComplete = async (score: number) => {
     if (!lesson) return;
-    
+
     try {
       const timeSpent = Math.round((Date.now() - startTime) / 60000); // minutes
       const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
-      
+
       if (userProfile.id) {
         await progressService.updateProgress(userProfile.id, lesson.id, {
           status: 'completed',
@@ -149,7 +153,7 @@ export default function LessonPage() {
           completed_at: new Date().toISOString()
         });
       }
-      
+
       // Обновляем статистику в localStorage
       const updatedProfile = {
         ...userProfile,
@@ -157,9 +161,9 @@ export default function LessonPage() {
         knownWords: (userProfile.knownWords || 0) + words.length
       };
       localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
-      
+
       setLessonCompleted(true);
-      
+
       setTimeout(() => {
         navigate(-1);
       }, 3000);
@@ -254,7 +258,7 @@ export default function LessonPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 pt-16">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center mb-8">
-            <button 
+            <button
               onClick={() => setShowQuiz(false)}
               className="mr-4 p-3 hover:bg-slate-700 rounded-xl transition-colors"
             >
@@ -262,8 +266,8 @@ export default function LessonPage() {
             </button>
             <h1 className="text-2xl font-bold text-white">Тест по уроку: {lesson.title}</h1>
           </div>
-          
-          <LessonQuiz 
+
+          <LessonQuiz
             questions={quizQuestions}
             onComplete={handleQuizComplete}
             onRetry={handleQuizRetry}
@@ -276,8 +280,13 @@ export default function LessonPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="p-6 pt-16">
+        {toast && (
+          <div className="mb-4 rounded-xl bg-green-600/20 border border-green-600/30 text-green-300 px-4 py-3">
+            {toast}
+          </div>
+        )}
         <div className="flex items-center justify-between mb-8">
-          <button 
+          <button
             onClick={() => navigate(-1)}
             className="p-3 hover:bg-slate-700 rounded-xl transition-colors"
           >
@@ -289,14 +298,14 @@ export default function LessonPage() {
         <div className="mb-8">
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 mb-6 border border-slate-600 shadow-xl">
             <h2 className="text-lg font-semibold text-slate-300 mb-4">Текст урока:</h2>
-            
+
             <InteractiveText
               text={lesson.content}
               translations={translations}
               unknownWords={words.filter(word => !translations[word] || translations[word] === 'Перевод недоступен')}
               className="text-slate-200 text-xl leading-relaxed mb-6"
             />
-            
+
             <div className="mb-4 p-3 bg-slate-700/50 rounded-xl">
               <div className="text-sm text-slate-400 mb-2">Статистика урока:</div>
               <div className="flex justify-between text-sm">
@@ -311,8 +320,8 @@ export default function LessonPage() {
             </div>
 
             {lesson.audio_url && (
-              <AudioPlayer 
-                src={lesson.audio_url} 
+              <AudioPlayer
+                src={lesson.audio_url}
                 title={`Аудио: ${lesson.title}`}
                 autoPlay={false}
               />
@@ -327,9 +336,9 @@ export default function LessonPage() {
                 Слово {currentWordIndex + 1} из {words.length}
               </span>
             </div>
-            
+
             <div className="w-full bg-slate-700 rounded-full h-3 mb-8 shadow-inner">
-              <div 
+              <div
                 className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500 shadow-lg"
                 style={{ width: `${((currentWordIndex + 1) / words.length) * 100}%` }}
               ></div>

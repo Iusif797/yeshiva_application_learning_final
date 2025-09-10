@@ -43,16 +43,16 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
             email: formData.email,
             password: formData.password,
           });
-          
+
           if (error) throw error;
-          
+
           // Get user profile
           const { data: profile } = await supabase
             .from('user_profiles')
             .select('*')
             .eq('user_id', data.user.id)
             .single();
-            
+
           if (data.user) {
             const user: UserType = {
               id: data.user.id,
@@ -76,9 +76,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
               }
             }
           });
-          
+
           if (error) throw error;
-          
+
           // Create user profile
           if (data.user) {
             try {
@@ -88,7 +88,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                 user_type: userType,
                 native_language: formData.nativeLanguage
               });
-              
+
               if (profileError) {
                 console.warn('Profile creation error:', profileError);
                 // Continue anyway for demo purposes
@@ -97,7 +97,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
               console.warn('Profile creation failed, continuing with demo mode:', profileError);
             }
           }
-          
+
           if (data.user) {
             const user: UserType = {
               id: data.user.id,
@@ -120,7 +120,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
           nativeLanguage: formData.nativeLanguage,
           created_at: new Date().toISOString()
         };
-        
+
         localStorage.setItem('currentUser', JSON.stringify(userData));
         localStorage.setItem('userProfile', JSON.stringify({
           name: formData.name,
@@ -131,7 +131,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
           totalLessons: 0,
           knownWords: 0
         }));
-        
+
         onAuthSuccess(userData);
       }
     } catch (error: any) {
@@ -141,36 +141,49 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      if (isSupabaseConfigured() && supabase) {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: window.location.origin,
+          },
+        });
+        if (error) throw error;
+      } else {
+        alert('OAuth недоступен в демо-режиме.');
+      }
+    } catch (error: any) {
+      alert(error.message || 'Не удалось выполнить вход через Google');
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className={`relative max-w-md w-full rounded-3xl overflow-hidden shadow-2xl ${
-        darkMode 
-          ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900' 
+      <div className={`relative max-w-md w-full rounded-3xl overflow-hidden shadow-2xl ${darkMode
+          ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'
           : 'bg-gradient-to-br from-white via-blue-50 to-purple-50'
-      }`}>
+        }`}>
         {/* Decorative background elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-          <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-20 ${
-            darkMode ? 'bg-blue-500' : 'bg-purple-400'
-          }`}></div>
-          <div className={`absolute -bottom-10 -left-10 w-24 h-24 rounded-full opacity-20 ${
-            darkMode ? 'bg-purple-500' : 'bg-blue-400'
-          }`}></div>
-          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full opacity-10 ${
-            darkMode ? 'bg-gradient-to-r from-blue-500 to-purple-500' : 'bg-gradient-to-r from-purple-400 to-blue-400'
-          }`}></div>
+          <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-20 ${darkMode ? 'bg-blue-500' : 'bg-purple-400'
+            }`}></div>
+          <div className={`absolute -bottom-10 -left-10 w-24 h-24 rounded-full opacity-20 ${darkMode ? 'bg-purple-500' : 'bg-blue-400'
+            }`}></div>
+          <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full opacity-10 ${darkMode ? 'bg-gradient-to-r from-blue-500 to-purple-500' : 'bg-gradient-to-r from-purple-400 to-blue-400'
+            }`}></div>
         </div>
 
         <div className="relative p-8">
-          <button 
+          <button
             onClick={onClose}
-            className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${
-              darkMode 
-                ? 'hover:bg-slate-700 text-slate-400 hover:text-white' 
+            className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${darkMode
+                ? 'hover:bg-slate-700 text-slate-400 hover:text-white'
                 : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'
-            }`}
+              }`}
           >
             <X size={20} />
           </button>
@@ -198,40 +211,34 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                 <button
                   type="button"
                   onClick={() => setUserType('student')}
-                  className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                    userType === 'student'
+                  className={`p-4 rounded-xl border-2 transition-all duration-200 ${userType === 'student'
                       ? 'border-blue-500 bg-blue-500/10 shadow-lg'
                       : darkMode
                         ? 'border-slate-600 hover:border-slate-500 bg-slate-800/50'
                         : 'border-gray-200 hover:border-gray-300 bg-gray-50'
-                  }`}
+                    }`}
                 >
-                  <User size={24} className={`mx-auto mb-2 ${
-                    userType === 'student' ? 'text-blue-500' : darkMode ? 'text-slate-400' : 'text-gray-500'
-                  }`} />
-                  <div className={`text-sm font-semibold ${
-                    userType === 'student' ? 'text-blue-500' : darkMode ? 'text-slate-300' : 'text-gray-700'
-                  }`}>
+                  <User size={24} className={`mx-auto mb-2 ${userType === 'student' ? 'text-blue-500' : darkMode ? 'text-slate-400' : 'text-gray-500'
+                    }`} />
+                  <div className={`text-sm font-semibold ${userType === 'student' ? 'text-blue-500' : darkMode ? 'text-slate-300' : 'text-gray-700'
+                    }`}>
                     Ученик
                   </div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setUserType('rabbi')}
-                  className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                    userType === 'rabbi'
+                  className={`p-4 rounded-xl border-2 transition-all duration-200 ${userType === 'rabbi'
                       ? 'border-purple-500 bg-purple-500/10 shadow-lg'
                       : darkMode
                         ? 'border-slate-600 hover:border-slate-500 bg-slate-800/50'
                         : 'border-gray-200 hover:border-gray-300 bg-gray-50'
-                  }`}
+                    }`}
                 >
-                  <Users size={24} className={`mx-auto mb-2 ${
-                    userType === 'rabbi' ? 'text-purple-500' : darkMode ? 'text-slate-400' : 'text-gray-500'
-                  }`} />
-                  <div className={`text-sm font-semibold ${
-                    userType === 'rabbi' ? 'text-purple-500' : darkMode ? 'text-slate-300' : 'text-gray-700'
-                  }`}>
+                  <Users size={24} className={`mx-auto mb-2 ${userType === 'rabbi' ? 'text-purple-500' : darkMode ? 'text-slate-400' : 'text-gray-500'
+                    }`} />
+                  <div className={`text-sm font-semibold ${userType === 'rabbi' ? 'text-purple-500' : darkMode ? 'text-slate-300' : 'text-gray-700'
+                    }`}>
                     Раввин
                   </div>
                 </button>
@@ -251,11 +258,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none ${
-                    darkMode
+                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none ${darkMode
                       ? 'bg-slate-800/50 border-slate-600 text-white focus:border-blue-500 focus:bg-slate-800'
                       : 'bg-white border-gray-200 text-gray-900 focus:border-blue-500 focus:bg-blue-50/50'
-                  }`}
+                    }`}
                   placeholder="Введите ваше имя"
                 />
               </div>
@@ -267,19 +273,17 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                 Email
               </label>
               <div className="relative">
-                <Mail size={20} className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${
-                  darkMode ? 'text-slate-400' : 'text-gray-400'
-                }`} />
+                <Mail size={20} className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${darkMode ? 'text-slate-400' : 'text-gray-400'
+                  }`} />
                 <input
                   type="email"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none ${
-                    darkMode
+                  className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none ${darkMode
                       ? 'bg-slate-800/50 border-slate-600 text-white focus:border-blue-500 focus:bg-slate-800'
                       : 'bg-white border-gray-200 text-gray-900 focus:border-blue-500 focus:bg-blue-50/50'
-                  }`}
+                    }`}
                   placeholder="your@email.com"
                 />
               </div>
@@ -291,27 +295,24 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                 Пароль
               </label>
               <div className="relative">
-                <Lock size={20} className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${
-                  darkMode ? 'text-slate-400' : 'text-gray-400'
-                }`} />
+                <Lock size={20} className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${darkMode ? 'text-slate-400' : 'text-gray-400'
+                  }`} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none ${
-                    darkMode
+                  className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none ${darkMode
                       ? 'bg-slate-800/50 border-slate-600 text-white focus:border-blue-500 focus:bg-slate-800'
                       : 'bg-white border-gray-200 text-gray-900 focus:border-blue-500 focus:bg-blue-50/50'
-                  }`}
+                    }`}
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${
-                    darkMode ? 'text-slate-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'
-                  }`}
+                  className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${darkMode ? 'text-slate-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'
+                    }`}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -327,11 +328,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                 <select
                   value={formData.nativeLanguage}
                   onChange={(e) => setFormData({ ...formData, nativeLanguage: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none ${
-                    darkMode
+                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none ${darkMode
                       ? 'bg-slate-800/50 border-slate-600 text-white focus:border-blue-500'
                       : 'bg-white border-gray-200 text-gray-900 focus:border-blue-500'
-                  }`}
+                    }`}
                 >
                   {languages.map((lang) => (
                     <option key={lang.code} value={lang.name}>
@@ -346,11 +346,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-4 rounded-xl font-bold text-white transition-all duration-200 shadow-lg transform hover:scale-105 ${
-                userType === 'rabbi'
+              className={`w-full py-4 rounded-xl font-bold text-white transition-all duration-200 shadow-lg transform hover:scale-105 ${userType === 'rabbi'
                   ? 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 hover:shadow-purple-500/25'
                   : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:shadow-blue-500/25'
-              } ${loading ? 'opacity-50 cursor-not-allowed transform-none' : ''}`}
+                } ${loading ? 'opacity-50 cursor-not-allowed transform-none' : ''}`}
             >
               {loading ? (
                 <div className="flex items-center justify-center">
@@ -375,15 +374,29 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
             </button>
           </form>
 
+          {isLogin && (
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={signInWithGoogle}
+                className={`w-full py-3 rounded-xl font-semibold transition-all duration-200 ${darkMode
+                    ? 'border-2 border-slate-600 text-slate-200 hover:bg-slate-700/50'
+                    : 'border-2 border-gray-300 text-gray-800 hover:bg-gray-100'
+                  }`}
+              >
+                Войти через Google
+              </button>
+            </div>
+          )}
+
           {/* Toggle Login/Register */}
           <div className="text-center mt-6">
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className={`text-sm font-semibold transition-colors ${
-                darkMode 
-                  ? 'text-blue-400 hover:text-blue-300' 
+              className={`text-sm font-semibold transition-colors ${darkMode
+                  ? 'text-blue-400 hover:text-blue-300'
                   : 'text-blue-600 hover:text-blue-700'
-              }`}
+                }`}
             >
               {isLogin ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'}
             </button>

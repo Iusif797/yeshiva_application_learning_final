@@ -145,20 +145,36 @@ export default function LessonPage() {
       const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
 
       if (userProfile.id) {
-        await progressService.updateProgress(userProfile.id, lesson.id, {
-          status: 'completed',
-          completion_percentage: 100,
-          time_spent_minutes: timeSpent,
-          score: score,
-          completed_at: new Date().toISOString()
-        });
+        try {
+          await progressService.updateProgress(userProfile.id, lesson.id, {
+            status: 'completed',
+            completion_percentage: 100,
+            time_spent_minutes: timeSpent,
+            score: score,
+            completed_at: new Date().toISOString()
+          });
+        } catch (error) {
+          console.warn('Failed to save progress to database, saving locally:', error);
+        }
       }
 
-      // Обновляем статистику в localStorage
+      // Always save to localStorage as backup
+      const existingProgress = JSON.parse(localStorage.getItem('lessonProgress') || '{}');
+      existingProgress[lesson.id] = {
+        lessonId: lesson.id,
+        status: 'completed',
+        completion_percentage: 100,
+        time_spent_minutes: timeSpent,
+        score: score,
+        completed_at: new Date().toISOString()
+      };
+      localStorage.setItem('lessonProgress', JSON.stringify(existingProgress));
+
+      // Update user profile stats
       const updatedProfile = {
         ...userProfile,
         totalLessons: (userProfile.totalLessons || 0) + 1,
-        knownWords: (userProfile.knownWords || 0) + words.length
+        knownWords: (userProfile.knownWords || 0) + Math.floor(words.length * 0.7) // Assume 70% retention
       };
       localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
 
@@ -169,6 +185,26 @@ export default function LessonPage() {
       }, 3000);
     } catch (error) {
       console.error('Error completing lesson:', error);
+      // Fallback to local storage
+      const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+      const existingProgress = JSON.parse(localStorage.getItem('lessonProgress') || '{}');
+      existingProgress[lesson.id] = {
+        lessonId: lesson.id,
+          status: 'completed',
+          completion_percentage: 100,
+          time_spent_minutes: timeSpent,
+          score: score,
+          completed_at: new Date().toISOString()
+      };
+      localStorage.setItem('lessonProgress', JSON.stringify(existingProgress));
+
+      const updatedProfile = {
+        ...userProfile,
+        totalLessons: (userProfile.totalLessons || 0) + 1,
+        knownWords: (userProfile.knownWords || 0) + Math.floor(words.length * 0.7)
+      };
+      localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+
       setLessonCompleted(true);
       setTimeout(() => {
         navigate(-1);

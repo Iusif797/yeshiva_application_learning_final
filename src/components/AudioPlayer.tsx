@@ -44,7 +44,7 @@ export default function AudioPlayer({ src, title, autoPlay = false, className = 
     };
 
     const handleError = () => {
-      setError('Ошибка загрузки аудио');
+      setError('Аудиофайл недоступен или поврежден');
       setIsLoading(false);
     };
 
@@ -136,7 +136,12 @@ export default function AudioPlayer({ src, title, autoPlay = false, className = 
       } ${className}`}>
         <div className="flex items-center">
           <VolumeX size={20} className="mr-2" />
-          <span className="text-sm">{error}</span>
+          <div>
+            <div className="text-sm font-medium">{error}</div>
+            <div className="text-xs mt-1 opacity-75">
+              Попробуйте обновить страницу или обратитесь к раввину
+            </div>
+          </div>
         </div>
       </div>
     );

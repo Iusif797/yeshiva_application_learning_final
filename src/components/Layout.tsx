@@ -1,8 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Book, User, Users, Settings } from 'lucide-react';
+import { Book, User, Users, Settings, Bell } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import NotificationCenter from './NotificationCenter';
+import OfflineIndicator from './OfflineIndicator';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -86,6 +87,11 @@ export default function Layout({ children }: LayoutProps) {
             </div>
             <div className="flex items-center space-x-2">
               <NotificationCenter />
+              <div className={`text-xs px-2 py-1 rounded-full ${
+                darkMode ? 'bg-slate-700 text-slate-300' : 'bg-gray-200 text-gray-600'
+              }`}>
+                {user.role === 'rabbi' ? 'Раввин' : 'Студент'}
+              </div>
             </div>
           </div>
         </div>
@@ -94,6 +100,8 @@ export default function Layout({ children }: LayoutProps) {
       <main className="flex-1 pb-20">
         {children}
       </main>
+      
+      <OfflineIndicator />
       
       <nav className={`fixed bottom-0 left-0 right-0 border-t backdrop-blur-lg shadow-2xl ${
         darkMode 

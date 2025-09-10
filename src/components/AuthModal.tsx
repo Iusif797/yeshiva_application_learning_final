@@ -16,6 +16,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
   const [userType, setUserType] = useState<'student' | 'rabbi'>('student');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -34,6 +35,24 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    
+    // Validation
+    if (!formData.email || !formData.password) {
+      setError('Пожалуйста, заполните все обязательные поля');
+      return;
+    }
+    
+    if (formData.password.length < 6) {
+      setError('Пароль должен содержать минимум 6 символов');
+      return;
+    }
+    
+    if (!isLogin && !formData.name.trim()) {
+      setError('Пожалуйста, введите ваше имя');
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -135,7 +154,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
         onAuthSuccess(userData);
       }
     } catch (error: any) {
-      alert(error.message || 'Произошла ошибка');
+      setError(error.message || 'Произошла ошибка при входе/регистрации');
     } finally {
       setLoading(false);
     }
@@ -199,6 +218,11 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
             <p className={`${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>
               {isLogin ? 'Войдите в свой аккаунт' : 'Создайте новый аккаунт'}
             </p>
+            {error && (
+              <div className="mt-4 p-3 bg-red-600/20 border border-red-600/30 rounded-xl text-red-400 text-sm">
+                {error}
+              </div>
+            )}
           </div>
 
           {/* User Type Selection (only for registration) */}

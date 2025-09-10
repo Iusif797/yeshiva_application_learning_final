@@ -37,16 +37,36 @@ export default function ProgressPage() {
     
     setLoading(true);
     try {
-      // Загружаем реальные данные из localStorage
+      // Load real data from localStorage
       const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+      const lessonProgress = JSON.parse(localStorage.getItem('lessonProgress') || '{}');
       
-      // Обновляем статистику из localStorage
+      // Calculate real stats from lesson progress
+      const completedLessonsFromStorage = Object.values(lessonProgress).filter(
+        (progress: any) => progress.status === 'completed'
+      ).length;
+      
+      // Calculate total study time from lesson progress
+      const totalStudyTimeFromStorage = Object.values(lessonProgress).reduce(
+        (total: number, progress: any) => total + (progress.time_spent_minutes || 0), 0
+      );
+      
+      // Calculate average score from completed lessons
+      const completedLessons = Object.values(lessonProgress).filter(
+        (progress: any) => progress.status === 'completed' && progress.score
+      );
+      const averageScoreFromStorage = completedLessons.length > 0
+        ? Math.round(completedLessons.reduce((sum: number, progress: any) => sum + progress.score, 0) / completedLessons.length)
+        : 0;
+      
       const updatedStats = {
         ...stats,
         knownWords: userProfile.knownWords || stats.knownWords,
         studyStreak: userProfile.studyStreak || stats.studyStreak,
-        totalLessons: userProfile.totalLessons || stats.totalLessons,
-        completedLessons: Math.min(userProfile.totalLessons || stats.completedLessons, stats.totalLessons)
+        totalLessons: Math.max(userProfile.totalLessons || stats.totalLessons, completedLessonsFromStorage),
+        completedLessons: Math.max(completedLessonsFromStorage, userProfile.totalLessons || 0),
+        totalStudyTime: Math.max(Math.round(totalStudyTimeFromStorage / 60), stats.totalStudyTime),
+        averageScore: averageScoreFromStorage || stats.averageScore
       };
       
       setRealStats(updatedStats);

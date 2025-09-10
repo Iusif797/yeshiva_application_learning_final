@@ -24,6 +24,37 @@ body {
   box-sizing: border-box;
 }
 
+/* Prevent zoom on input focus on iOS */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  select,
+  textarea,
+  input[type="text"],
+  input[type="password"],
+  input[type="datetime"],
+  input[type="datetime-local"],
+  input[type="date"],
+  input[type="month"],
+  input[type="time"],
+  input[type="week"],
+  input[type="number"],
+  input[type="email"],
+  input[type="url"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="color"] {
+    font-size: 16px;
+  }
+}
+
+/* Improve touch targets */
+@media (max-width: 768px) {
+  button, 
+  .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
 #root {
   min-height: 100vh;
 }
@@ -69,4 +100,25 @@ body {
   cursor: pointer;
   border: 2px solid #1e293b;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better focus indicators */
+*:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Hide scrollbar but keep functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }

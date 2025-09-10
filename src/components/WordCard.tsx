@@ -19,6 +19,7 @@ export default function WordCard({ word, translation, gematria, onKnown, onUnkno
   const { darkMode } = useTheme();
   const [isFlipped, setIsFlipped] = useState(false);
   const [showGematria, setShowGematria] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -29,9 +30,11 @@ export default function WordCard({ word, translation, gematria, onKnown, onUnkno
   };
 
   const handleRequestTranslation = () => {
+    setIsProcessing(true);
     if (onRequestTranslation) {
       onRequestTranslation();
     }
+    setTimeout(() => setIsProcessing(false), 1000);
   };
 
   return (
@@ -134,14 +137,27 @@ export default function WordCard({ word, translation, gematria, onKnown, onUnkno
       <div className="mt-6">
         <button 
           onClick={handleRequestTranslation}
+          disabled={isProcessing}
           className={`w-full flex items-center justify-center text-white py-4 rounded-xl font-bold transition-all duration-200 shadow-lg ${
+            isProcessing
+              ? 'bg-gray-500 cursor-not-allowed'
+              : 
             darkMode
               ? 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 hover:shadow-purple-500/25'
               : 'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 hover:shadow-purple-500/30'
           }`}
         >
-          <Send size={20} className="mr-2" />
-          Отправить на перевод
+          {isProcessing ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              Отправляется...
+            </>
+          ) : (
+            <>
+              <Send size={20} className="mr-2" />
+              Отправить на перевод
+            </>
+          )}
         </button>
       </div>
 

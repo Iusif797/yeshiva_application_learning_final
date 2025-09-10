@@ -50,11 +50,17 @@ export default function InteractiveText({
   };
 
   const renderInteractiveText = () => {
-    const words = text.split(/(\s+)/);
+    // Better word splitting that preserves Hebrew text structure
+    const words = text.split(/(\s+|[׃׀])/);
     
     return words.map((segment, index) => {
-      const cleanWord = segment.trim();
+      const cleanWord = segment.trim().replace(/[׃׀]/g, ''); // Remove Hebrew punctuation
       if (!cleanWord || /^\s+$/.test(segment)) {
+        return <span key={index}>{segment}</span>;
+      }
+      
+      // Skip if it's just punctuation
+      if (/^[׃׀\s]*$/.test(segment)) {
         return <span key={index}>{segment}</span>;
       }
 
@@ -68,7 +74,7 @@ export default function InteractiveText({
             className={`cursor-pointer transition-all duration-200 hover:scale-105 ${
               isUnknown 
                 ? darkMode 
-                  ? 'bg-red-900/30 text-red-300 border-b-2 border-red-500' 
+                  ? 'bg-red-900/30 text-red-300 border-b-2 border-red-500 rounded-sm' 
                   : 'bg-red-100 text-red-700 border-b-2 border-red-400'
                 : hasTranslation
                   ? darkMode
@@ -76,7 +82,7 @@ export default function InteractiveText({
                     : 'hover:bg-blue-100 hover:text-blue-700'
                   : ''
             } px-1 py-0.5 rounded`}
-            title={isUnknown ? 'Неизвестное слово' : 'Нажмите для перевода'}
+            title={isUnknown ? 'Неизвестное слово - нажмите для перевода' : hasTranslation ? 'Нажмите для перевода' : 'Перевод недоступен'}
           >
             {segment}
           </span>

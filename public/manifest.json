@@ -1,0 +1,25 @@
+{
+  "name": "Yeshiva Learning - Изучение иврита и Торы",
+  "short_name": "Yeshiva Learning",
+  "description": "Современная платформа изучения иврита и текстов Торы",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/images/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/images/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["education", "books", "reference"],
+  "lang": "ru",
+  "dir": "ltr"
+}

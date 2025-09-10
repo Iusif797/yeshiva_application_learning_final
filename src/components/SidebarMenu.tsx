@@ -10,7 +10,6 @@ import {
   Star, 
   Trophy, 
   BarChart3,
-  BookOpen,
   Crown,
   Sparkles,
   ChevronRight

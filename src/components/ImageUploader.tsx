@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Camera, Upload, X, Check, User, Crop } from 'lucide-react';
+import { Camera, Upload, X, Check, User } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 interface ImageUploaderProps {

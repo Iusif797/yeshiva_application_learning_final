@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { User, Settings, Sun, Moon, LogOut, Edit, Check, X, Bell, Volume2, ChevronDown, BookOpen, BarChart2, Star, Globe, Palette, Shield, Smartphone } from 'lucide-react';
+import { User, Settings, Sun, Moon, LogOut, Edit, Check, X, Bell, Volume2, ChevronDown, BookOpen, BarChart2, Star, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import ImageUploader from '../components/ImageUploader';
 import PremiumToggle from '../components/PremiumToggle';

@@ -367,7 +367,7 @@ export default function SettingsPage() {
                       onChange={toggleDarkMode}
                       label={t('settings.darkMode')}
                       description="Темная тема для комфортного изучения"
-                      icon={darkMode ? <Moon size={22} className="text-yellow-400" /> : <Sun size={22} className="text-yellow-500" />}
+                      icon={darkMode ? <Moon size={20} className="text-yellow-400" /> : <Sun size={20} className="text-yellow-500" />}
                       color="blue"
                     />
 
@@ -379,7 +379,7 @@ export default function SettingsPage() {
                       }}
                       label={t('settings.notifications')}
                       description="Уведомления о новых уроках и достижениях"
-                      icon={<Bell size={22} className="text-green-500" />}
+                      icon={<Bell size={20} className="text-green-500" />}
                       color="green"
                     />
 
@@ -391,7 +391,7 @@ export default function SettingsPage() {
                       }}
                       label={t('settings.autoPlayAudio')}
                       description="Автоматическое воспроизведение аудио"
-                      icon={<Volume2 size={22} className="text-red-500" />}
+                      icon={<Volume2 size={20} className="text-red-500" />}
                       color="red"
                     />
 
@@ -403,7 +403,7 @@ export default function SettingsPage() {
                       }}
                       label={t('settings.rtlMode')}
                       description="Режим чтения справа налево для иврита"
-                      icon={<BookOpen size={22} className="text-indigo-500" />}
+                      icon={<BookOpen size={20} className="text-indigo-500" />}
                       color="purple"
                     />
                   </div>

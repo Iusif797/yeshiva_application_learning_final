@@ -96,19 +96,19 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
       {/* Backdrop */}
       <div 
         className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
         }`}
         onClick={onClose}
       />
 
       {/* Sidebar */}
-      <div className={`fixed top-0 left-0 h-full w-80 z-50 transform transition-transform duration-300 ease-out ${
+      <div className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] z-50 transform transition-transform duration-300 ease-out ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } ${
         darkMode 
           ? 'bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900' 
           : 'bg-gradient-to-b from-white via-blue-50 to-purple-50'
-      } shadow-2xl`}>
+      } shadow-2xl border-r ${darkMode ? 'border-slate-600' : 'border-gray-200'}`}>
         
         {/* Decorative elements */}
         <div className="absolute inset-0 overflow-hidden">

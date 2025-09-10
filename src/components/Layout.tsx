@@ -62,13 +62,13 @@ export default function Layout({ children }: LayoutProps) {
             <div className="flex items-center">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className={`p-2 rounded-xl mr-3 transition-colors ${
+                className={`p-2 rounded-xl mr-3 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${
                   darkMode 
                     ? 'hover:bg-slate-700 text-slate-400 hover:text-white' 
                     : 'hover:bg-gray-100 text-gray-600 hover:text-gray-800'
                 }`}
               >
-                <Menu size={20} />
+                <Menu size={24} />
               </button>
               <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mr-3 sm:mr-4 shadow-lg ${
                 user.role === 'rabbi' 

@@ -294,6 +294,7 @@ html {
 .sidebar-backdrop {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  z-index: 40;
 }
 
 /* Smooth hover effects for sidebar items */
@@ -303,6 +304,15 @@ html {
 
 .sidebar-item:hover {
   transform: translateX(4px);
+}
+
+/* Ensure sidebar is above everything */
+.sidebar-menu {
+  z-index: 50;
+}
+
+.sidebar-backdrop {
+  z-index: 40;
 }
 
 /* Premium gradient borders */

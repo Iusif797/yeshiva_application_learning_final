@@ -39,11 +39,15 @@ export const calculateGematria = (hebrewText: string) => {
 };
 
 export const extractUniqueWords = (text: string): string[] => {
-  // Remove Hebrew vowels and punctuation, split by whitespace
-  const cleanText = text.replace(/[\u0591-\u05BD\u05BF-\u05C2\u05C4-\u05C5\u05C7]/g, '');
-  const words = cleanText.split(/\s+/).filter(word => 
-    word.length > 0 && /[\u0590-\u05FF]/.test(word)
-  );
+  // Split by whitespace and filter Hebrew words
+  const words = text.split(/\s+/).filter(word => {
+    // Remove punctuation and vowels for filtering
+    const cleanWord = word.replace(/[\u0591-\u05BD\u05BF-\u05C2\u05C4-\u05C5\u05C7׃׀]/g, '');
+    return cleanWord.length > 0 && /[\u05D0-\u05EA]/.test(cleanWord);
+  }).map(word => {
+    // Keep original word with vowels for display
+    return word.replace(/[׃׀]/g, ''); // Remove only major punctuation
+  });
   
   return [...new Set(words)];
 };

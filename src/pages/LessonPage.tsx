@@ -186,15 +186,16 @@ export default function LessonPage() {
     } catch (error) {
       console.error('Error completing lesson:', error);
       // Fallback to local storage
+      const timeSpent = Math.round((Date.now() - startTime) / 60000);
       const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
       const existingProgress = JSON.parse(localStorage.getItem('lessonProgress') || '{}');
       existingProgress[lesson.id] = {
         lessonId: lesson.id,
-          status: 'completed',
-          completion_percentage: 100,
-          time_spent_minutes: timeSpent,
-          score: score,
-          completed_at: new Date().toISOString()
+        status: 'completed',
+        completion_percentage: 100,
+        time_spent_minutes: timeSpent,
+        score: score,
+        completed_at: new Date().toISOString()
       };
       localStorage.setItem('lessonProgress', JSON.stringify(existingProgress));
 

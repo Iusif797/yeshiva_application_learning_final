@@ -50,10 +50,10 @@ export default function InteractiveText({
   };
 
   const renderInteractiveText = () => {
-    // Better word splitting that preserves Hebrew text structure
-    const words = text.split(/(\s+|[׃׀])/);
+    // Split text while preserving Hebrew structure
+    const segments = text.split(/(\s+|[׃׀])/);
     
-    return words.map((segment, index) => {
+    return segments.map((segment, index) => {
       const cleanWord = segment.trim().replace(/[׃׀]/g, ''); // Remove Hebrew punctuation
       if (!cleanWord || /^\s+$/.test(segment)) {
         return <span key={index}>{segment}</span>;

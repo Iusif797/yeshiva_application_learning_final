@@ -44,7 +44,7 @@ export default function AudioPlayer({ src, title, autoPlay = false, className = 
     };
 
     const handleError = () => {
-      setError('Аудиофайл недоступен или поврежден');
+      setError('Аудиофайл временно недоступен');
       setIsLoading(false);
     };
 
@@ -139,7 +139,7 @@ export default function AudioPlayer({ src, title, autoPlay = false, className = 
           <div>
             <div className="text-sm font-medium">{error}</div>
             <div className="text-xs mt-1 opacity-75">
-              Попробуйте обновить страницу или обратитесь к раввину
+              Попробуйте позже или обратитесь к раввину
             </div>
           </div>
         </div>

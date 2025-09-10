@@ -34,7 +34,7 @@ export default function WordCard({ word, translation, gematria, onKnown, onUnkno
     if (onRequestTranslation) {
       onRequestTranslation();
     }
-    setTimeout(() => setIsProcessing(false), 1000);
+    setTimeout(() => setIsProcessing(false), 2000);
   };
 
   return (

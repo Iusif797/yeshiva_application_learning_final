@@ -3,6 +3,7 @@ import { Bell, X, Check, Info, AlertCircle, CheckCircle, AlertTriangle } from 'l
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { notificationService } from '../lib/database';
+import { supabase } from '../lib/supabase';
 
 interface Notification {
   id: string;

@@ -36,7 +36,7 @@ export default function NotificationCenter() {
             id: '1',
             title: 'Добро пожаловать!',
             message: 'Добро пожаловать в приложение изучения иврита и Торы',
-            type: 'success',
+            type: 'success' as const,
             is_read: false,
             created_at: new Date().toISOString()
           },
@@ -44,7 +44,7 @@ export default function NotificationCenter() {
             id: '2',
             title: 'Новый урок доступен',
             message: 'Раввин добавил новый урок в курс "Тора - Берешит"',
-            type: 'info',
+            type: 'info' as const,
             is_read: false,
             created_at: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
           }
@@ -87,7 +87,7 @@ export default function NotificationCenter() {
           id: '1',
           title: 'Система работает',
           message: 'Приложение успешно загружено и готово к использованию',
-          type: 'success',
+          type: 'success' as const,
           is_read: false,
           created_at: new Date().toISOString()
         }

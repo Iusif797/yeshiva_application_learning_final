@@ -315,37 +315,37 @@ export default function LessonPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="p-6 pt-16">
+    <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="p-4 sm:p-6 pt-16 sm:pt-20">
         {toast && (
-          <div className="mb-4 rounded-xl bg-green-600/20 border border-green-600/30 text-green-300 px-4 py-3">
+          <div className="mb-4 rounded-xl bg-green-600/20 border border-green-600/30 text-green-300 px-4 py-3 mobile-card">
             {toast}
           </div>
         )}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6 sm:mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="p-3 hover:bg-slate-700 rounded-xl transition-colors"
+            className="p-3 hover:bg-slate-700 rounded-xl transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <ArrowLeft size={24} className="text-slate-300" />
           </button>
-          <h1 className="text-2xl font-bold text-white text-right">{lesson.title}</h1>
+          <h1 className="text-lg sm:text-2xl font-bold text-white text-right flex-1 mr-4">{lesson.title}</h1>
         </div>
 
-        <div className="mb-8">
-          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 mb-6 border border-slate-600 shadow-xl">
+        <div className="mb-6 sm:mb-8">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4 sm:p-6 mb-6 border border-slate-600 shadow-xl card-mobile">
             <h2 className="text-lg font-semibold text-slate-300 mb-4">Текст урока:</h2>
 
             <InteractiveText
               text={lesson.content}
               translations={translations}
               unknownWords={words.filter(word => !translations[word] || translations[word] === 'Перевод недоступен')}
-              className="text-slate-200 text-xl leading-relaxed mb-6"
+              className="text-slate-200 text-lg sm:text-xl leading-relaxed mb-6"
             />
 
             <div className="mb-4 p-3 bg-slate-700/50 rounded-xl">
               <div className="text-sm text-slate-400 mb-2">Статистика урока:</div>
-              <div className="flex justify-between text-sm">
+              <div className="flex flex-col sm:flex-row justify-between text-sm space-y-1 sm:space-y-0">
                 <span className="text-slate-300">Всего слов: {words.length}</span>
                 <span className="text-red-400">
                   Неизвестных: {words.filter(word => !translations[word] || translations[word] === 'Перевод недоступен').length}
@@ -367,16 +367,16 @@ export default function LessonPage() {
         </div>
 
         {words.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <div className="text-center mb-6">
-              <span className="text-slate-300 text-lg font-medium bg-slate-800 px-4 py-2 rounded-full">
+              <span className="text-slate-300 text-base sm:text-lg font-medium bg-slate-800 px-4 py-2 rounded-full">
                 Слово {currentWordIndex + 1} из {words.length}
               </span>
             </div>
 
-            <div className="w-full bg-slate-700 rounded-full h-3 mb-8 shadow-inner">
+            <div className="w-full bg-slate-700 rounded-full h-2 sm:h-3 mb-6 sm:mb-8 shadow-inner">
               <div
-                className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500 shadow-lg"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 sm:h-3 rounded-full transition-all duration-500 shadow-lg"
                 style={{ width: `${((currentWordIndex + 1) / words.length) * 100}%` }}
               ></div>
             </div>

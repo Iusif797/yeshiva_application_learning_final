@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { User, Settings, Sun, Moon, LogOut, Edit, Check, X, Bell, Volume2, ChevronDown, BookOpen, BarChart2, Star } from 'lucide-react';
+import { User, Settings, Sun, Moon, LogOut, Edit, Check, X, Bell, Volume2, ChevronDown, BookOpen, BarChart2, Star, Globe, Palette, Shield, Smartphone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import ImageUploader from '../components/ImageUploader';
+import PremiumToggle from '../components/PremiumToggle';
 
 interface UserProfile {
   name: string;
@@ -12,13 +14,14 @@ interface UserProfile {
   studyStreak: number;
   totalLessons: number;
   knownWords: number;
+  avatar?: string;
 }
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
   const { darkMode, toggleDarkMode } = useTheme();
   const { user, logout } = useAuth();
-  const [notifications, setNotifications] = useState(true); // This state is still local for notifications
+  const [notifications, setNotifications] = useState(true);
   const [autoPlay, setAutoPlay] = useState(false);
   const [rtlMode, setRtlMode] = useState(true);
   const [showProfileEdit, setShowProfileEdit] = useState(false);
@@ -32,7 +35,8 @@ export default function SettingsPage() {
     nativeLanguageCode: 'ru',
     studyStreak: 15,
     totalLessons: 12,
-    knownWords: 245
+    knownWords: 245,
+    avatar: localStorage.getItem('userAvatar') || undefined
   });
 
   const [tempProfile, setTempProfile] = useState(userProfile);
@@ -49,13 +53,16 @@ export default function SettingsPage() {
   ];
 
   useEffect(() => {
-    // Load user data from localStorage or API
     try {
       const savedProfile = localStorage.getItem('userProfile');
       if (savedProfile) {
         const parsedProfile = JSON.parse(savedProfile);
-        setUserProfile(parsedProfile);
-        setTempProfile(parsedProfile);
+        const profileWithAvatar = {
+          ...parsedProfile,
+          avatar: localStorage.getItem('userAvatar') || undefined
+        };
+        setUserProfile(profileWithAvatar);
+        setTempProfile(profileWithAvatar);
       }
     } catch (error) {
       console.warn('Failed to parse user profile from localStorage:', error);
@@ -66,7 +73,6 @@ export default function SettingsPage() {
       if (savedSettings) {
         const settings = JSON.parse(savedSettings);
         setNotifications(settings.notifications ?? true);
-        // darkMode is now managed by ThemeContext, no need to load here
         setAutoPlay(settings.autoPlay ?? false);
         setRtlMode(settings.rtlMode ?? true);
       }
@@ -78,7 +84,6 @@ export default function SettingsPage() {
   const saveSettings = () => {
     const settings = {
       notifications,
-      // darkMode is saved by ThemeContext
       autoPlay,
       rtlMode
     };
@@ -93,17 +98,23 @@ export default function SettingsPage() {
     showSavedMessage(t('settings.settingsSaved'));
   };
 
+  const handleImageChange = (imageUrl: string) => {
+    const updatedProfile = { ...tempProfile, avatar: imageUrl };
+    setTempProfile(updatedProfile);
+    setUserProfile(updatedProfile);
+    localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+    showSavedMessage('Фото профиля обновлено!');
+  };
+
   const showSavedMessage = (message: string) => {
     setSavedMessage(message);
-    setTimeout(() => setSavedMessage(''), 2000);
+    setTimeout(() => setSavedMessage(''), 3000);
   };
 
   const handleLanguageChange = (languageCode: string) => {
     const selectedLang = languages.find(lang => lang.code === languageCode);
     if (selectedLang) {
       i18n.changeLanguage(languageCode);
-      // We are not changing the nativeLanguage in the profile here,
-      // just the interface language.
       setShowLanguageSelect(false);
       showSavedMessage(t('settings.languageChangedTo', { language: selectedLang.name }));
     }
@@ -115,205 +126,303 @@ export default function SettingsPage() {
     }
   };
 
-  const toggleSetting = (setting: string, value: boolean) => {
-    switch (setting) {
-      case 'notifications':
-        setNotifications(value);
-        break;
-      case 'autoPlay':
-        setAutoPlay(value);
-        break;
-      case 'rtlMode':
-        setRtlMode(value);
-        break;
-    }
-    setTimeout(saveSettings, 100);
-  };
-
   return (
-    <div className={`p-6 pt-16 min-h-screen ${darkMode ? 'bg-slate-900 text-white' : 'bg-gray-50 text-gray-900'} transition-colors duration-300`}>
-      {/* Saved Message Popup */}
-      {savedMessage && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg z-50 flex items-center">
-          <Check size={20} className="mr-2" />
-          {savedMessage}
-        </div>
-      )}
+    <div className={`min-h-screen transition-all duration-500 ${
+      darkMode 
+        ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900' 
+        : 'bg-gradient-to-br from-blue-50 via-white to-purple-50'
+    }`}>
+      {/* Decorative Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className={`absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-5 ${
+          darkMode ? 'bg-blue-500' : 'bg-purple-400'
+        }`}></div>
+        <div className={`absolute -bottom-40 -left-40 w-96 h-96 rounded-full opacity-5 ${
+          darkMode ? 'bg-purple-500' : 'bg-blue-400'
+        }`}></div>
+      </div>
 
-      <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{t('settings.title')}</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Left Column: Profile */}
-        <div className="md:col-span-1">
-          <div className={`p-6 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-white'} shadow-lg`}>
-            <div className="flex items-center mb-6">
-              <User size={28} className="mr-4 text-blue-400" />
-              <h2 className="text-2xl font-semibold">{t('settings.profile')}</h2>
-            </div>
-
-            {showProfileEdit ? (
-              // Edit Profile Form
-              <div className="space-y-4">
-                <div>
-                  <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>{t('settings.name')}</label>
-                  <input
-                    type="text"
-                    value={tempProfile.name}
-                    onChange={(e) => setTempProfile({ ...tempProfile, name: e.target.value })}
-                    className={`w-full px-4 py-2 rounded-lg border-2 ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-100 border-gray-200'} focus:outline-none focus:border-blue-500`}
-                  />
-                </div>
-                <div>
-                  <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-slate-300' : 'text-gray-600'}`}>{t('settings.email')}</label>
-                  <input
-                    type="email"
-                    value={tempProfile.email}
-                    onChange={(e) => setTempProfile({ ...tempProfile, email: e.target.value })}
-                    className={`w-full px-4 py-2 rounded-lg border-2 ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-gray-100 border-gray-200'} focus:outline-none focus:border-blue-500`}
-                  />
-                </div>
-                {/* Native Language is not editable here anymore, it's part of registration */}
-                <div className="flex justify-end space-x-3 mt-4">
-                  <button onClick={() => setShowProfileEdit(false)} className={`px-4 py-2 rounded-lg font-semibold transition-colors ${darkMode ? 'bg-slate-600 hover:bg-slate-500' : 'bg-gray-200 hover:bg-gray-300'}`}>
-                    <X size={18} className="inline-block mr-2" />{t('settings.cancel')}
-                  </button>
-                  <button onClick={handleSaveProfile} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-                    <Check size={18} className="inline-block mr-2" />{t('settings.save')}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              // Display Profile Info
-              <div className="space-y-4">
-                <div className="flex items-center">
-                  <img src={`https://i.pravatar.cc/150?u=${user?.email}`} alt="Avatar" className="w-20 h-20 rounded-full mr-6 border-4 border-blue-400" />
-                  <div>
-                    <p className="text-xl font-bold">{userProfile.name}</p>
-                    <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>{userProfile.email}</p>
-                  </div>
-                </div>
-
-                <hr className={darkMode ? 'border-slate-700' : 'border-gray-200'} />
-
-                <div className="space-y-3 text-sm">
-                  <p><strong>{t('settings.nativeLanguage')}:</strong> {userProfile.nativeLanguage}</p>
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <Star className="mx-auto mb-1 text-yellow-400" size={24} />
-                      <p className="font-bold text-lg">{userProfile.studyStreak}</p>
-                      <p className={`${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>{t('settings.studyStreak')}</p>
-                    </div>
-                    <div>
-                      <BookOpen className="mx-auto mb-1 text-green-400" size={24} />
-                      <p className="font-bold text-lg">{userProfile.totalLessons}</p>
-                      <p className={`${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>{t('settings.totalLessons')}</p>
-                    </div>
-                    <div>
-                      <BarChart2 className="mx-auto mb-1 text-purple-400" size={24} />
-                      <p className="font-bold text-lg">{userProfile.knownWords}</p>
-                      <p className={`${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>{t('settings.knownWords')}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <button onClick={() => setShowProfileEdit(true)} className={`w-full mt-4 px-4 py-2 rounded-lg font-semibold flex items-center justify-center transition-colors ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-200 hover:bg-gray-300'}`}>
-                  <Edit size={16} className="mr-2" /> {t('settings.editProfile')}
-                </button>
-              </div>
-            )}
+      <div className="relative z-10 p-4 sm:p-6 pt-16 sm:pt-20">
+        {/* Success Message */}
+        {savedMessage && (
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-2xl shadow-2xl z-50 flex items-center backdrop-blur-lg">
+            <Check size={20} className="mr-2" />
+            {savedMessage}
           </div>
+        )}
+
+        {/* Header */}
+        <div className="mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-3 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            {t('settings.title')}
+          </h1>
+          <p className={`text-base sm:text-lg ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>
+            Персонализируйте свой опыт обучения
+          </p>
         </div>
 
-        {/* Right Column: Settings */}
-        <div className="md:col-span-2">
-          <div className={`p-6 rounded-2xl ${darkMode ? 'bg-slate-800' : 'bg-white'} shadow-lg`}>
-            <div className="flex items-center mb-6">
-              <Settings size={28} className="mr-4 text-purple-400" />
-              <h2 className="text-2xl font-semibold">{t('settings.preferences')}</h2>
-            </div>
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            {/* Profile Section */}
+            <div className="lg:col-span-1">
+              <div className={`rounded-3xl p-6 sm:p-8 shadow-2xl border backdrop-blur-lg ${
+                darkMode 
+                  ? 'bg-slate-800/50 border-slate-600' 
+                  : 'bg-white/80 border-gray-200'
+              }`}>
+                <div className="flex items-center mb-6">
+                  <User size={28} className="mr-4 text-blue-400" />
+                  <h2 className={`text-xl sm:text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {t('settings.profile')}
+                  </h2>
+                </div>
 
-            <div className="space-y-6">
-              {/* Interface Language */}
-              <div className="relative">
-                <label className={`block text-lg font-semibold mb-2 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>{t('settings.interfaceLanguage')}</label>
-                <button
-                  onClick={() => setShowLanguageSelect(!showLanguageSelect)}
-                  className={`w-full text-left flex justify-between items-center px-4 py-3 rounded-xl border-2 transition-all duration-200 ${darkMode
-                    ? 'bg-slate-700 border-slate-600 text-white focus:border-blue-500'
-                    : 'bg-white border-gray-200 text-gray-900 focus:border-blue-500'
-                    }`}
-                >
-                  <span>{languages.find(l => l.code === i18n.language)?.name || 'Select Language'}</span>
-                  <ChevronDown size={20} className={`transition-transform ${showLanguageSelect ? 'rotate-180' : ''}`} />
-                </button>
+                {showProfileEdit ? (
+                  <div className="space-y-6">
+                    {/* Avatar Upload */}
+                    <div className="flex justify-center">
+                      <ImageUploader
+                        currentImage={tempProfile.avatar}
+                        onImageChange={handleImageChange}
+                      />
+                    </div>
 
-                {showLanguageSelect && (
-                  <div className={`absolute z-10 w-full mt-2 rounded-xl shadow-lg ${darkMode ? 'bg-slate-700' : 'bg-white'} border ${darkMode ? 'border-slate-600' : 'border-gray-200'}`}>
-                    {languages.map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => handleLanguageChange(lang.code)}
-                        className="w-full text-left px-4 py-3 hover:bg-blue-500/10"
+                    <div>
+                      <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
+                        {t('settings.name')}
+                      </label>
+                      <input
+                        type="text"
+                        value={tempProfile.name}
+                        onChange={(e) => setTempProfile({ ...tempProfile, name: e.target.value })}
+                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none ${
+                          darkMode 
+                            ? 'bg-slate-700/50 border-slate-600 text-white focus:border-blue-500' 
+                            : 'bg-white border-gray-200 text-gray-900 focus:border-blue-500'
+                        }`}
+                      />
+                    </div>
+
+                    <div>
+                      <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
+                        {t('settings.email')}
+                      </label>
+                      <input
+                        type="email"
+                        value={tempProfile.email}
+                        onChange={(e) => setTempProfile({ ...tempProfile, email: e.target.value })}
+                        className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 focus:outline-none ${
+                          darkMode 
+                            ? 'bg-slate-700/50 border-slate-600 text-white focus:border-blue-500' 
+                            : 'bg-white border-gray-200 text-gray-900 focus:border-blue-500'
+                        }`}
+                      />
+                    </div>
+
+                    <div className="flex space-x-3 pt-4">
+                      <button 
+                        onClick={() => setShowProfileEdit(false)} 
+                        className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                          darkMode 
+                            ? 'bg-slate-600 hover:bg-slate-500 text-white' 
+                            : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+                        }`}
                       >
-                        {lang.flag} {lang.name}
+                        <X size={18} className="inline-block mr-2" />
+                        {t('settings.cancel')}
                       </button>
-                    ))}
+                      <button 
+                        onClick={handleSaveProfile} 
+                        className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-blue-500/25"
+                      >
+                        <Check size={18} className="inline-block mr-2" />
+                        {t('settings.save')}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
+                      <ImageUploader
+                        currentImage={userProfile.avatar}
+                        onImageChange={handleImageChange}
+                      />
+                      <div className="text-center sm:text-left">
+                        <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {userProfile.name}
+                        </p>
+                        <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+                          {userProfile.email}
+                        </p>
+                        <p className={`text-sm mt-1 ${darkMode ? 'text-slate-400' : 'text-gray-500'}`}>
+                          <strong>{t('settings.nativeLanguage')}:</strong> {userProfile.nativeLanguage}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div className={`p-4 rounded-xl ${darkMode ? 'bg-slate-700/50' : 'bg-blue-50'}`}>
+                        <Star className="mx-auto mb-2 text-yellow-400" size={24} />
+                        <p className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {userProfile.studyStreak}
+                        </p>
+                        <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>
+                          {t('settings.studyStreak')}
+                        </p>
+                      </div>
+                      <div className={`p-4 rounded-xl ${darkMode ? 'bg-slate-700/50' : 'bg-blue-50'}`}>
+                        <BookOpen className="mx-auto mb-2 text-green-400" size={24} />
+                        <p className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {userProfile.totalLessons}
+                        </p>
+                        <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>
+                          {t('settings.totalLessons')}
+                        </p>
+                      </div>
+                      <div className={`p-4 rounded-xl ${darkMode ? 'bg-slate-700/50' : 'bg-blue-50'}`}>
+                        <BarChart2 className="mx-auto mb-2 text-purple-400" size={24} />
+                        <p className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                          {userProfile.knownWords}
+                        </p>
+                        <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>
+                          {t('settings.knownWords')}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={() => setShowProfileEdit(true)} 
+                      className={`w-full px-4 py-3 rounded-xl font-semibold flex items-center justify-center transition-all duration-200 ${
+                        darkMode 
+                          ? 'bg-slate-700 hover:bg-slate-600 text-white' 
+                          : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+                      }`}
+                    >
+                      <Edit size={16} className="mr-2" />
+                      {t('settings.editProfile')}
+                    </button>
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* Dark Mode */}
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  {darkMode ? <Moon className="mr-3 text-yellow-400" size={22} /> : <Sun className="mr-3 text-yellow-500" size={22} />}
-                  <span className="text-lg font-semibold">{t('settings.darkMode')}</span>
+            {/* Settings Section */}
+            <div className="lg:col-span-2">
+              <div className={`rounded-3xl p-6 sm:p-8 shadow-2xl border backdrop-blur-lg ${
+                darkMode 
+                  ? 'bg-slate-800/50 border-slate-600' 
+                  : 'bg-white/80 border-gray-200'
+              }`}>
+                <div className="flex items-center mb-8">
+                  <Settings size={28} className="mr-4 text-purple-400" />
+                  <h2 className={`text-xl sm:text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {t('settings.preferences')}
+                  </h2>
                 </div>
-                <button onClick={toggleDarkMode} className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${darkMode ? 'bg-blue-600' : 'bg-gray-300'}`}>
-                  <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${darkMode ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-              </div>
 
-              {/* Notifications */}
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <Bell className="mr-3 text-green-500" size={22} />
-                  <span className="text-lg font-semibold">{t('settings.notifications')}</span>
+                <div className="space-y-2">
+                  {/* Interface Language */}
+                  <div className="relative">
+                    <label className={`block text-sm font-semibold mb-3 ${darkMode ? 'text-slate-300' : 'text-gray-700'}`}>
+                      {t('settings.interfaceLanguage')}
+                    </label>
+                    <button
+                      onClick={() => setShowLanguageSelect(!showLanguageSelect)}
+                      className={`w-full text-left flex justify-between items-center px-4 py-4 rounded-xl border-2 transition-all duration-200 ${
+                        darkMode
+                          ? 'bg-slate-700/50 border-slate-600 text-white hover:border-blue-500'
+                          : 'bg-white border-gray-200 text-gray-900 hover:border-blue-500'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <Globe size={20} className="mr-3 text-blue-500" />
+                        <span>{languages.find(l => l.code === i18n.language)?.name || 'Select Language'}</span>
+                      </div>
+                      <ChevronDown size={20} className={`transition-transform ${showLanguageSelect ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {showLanguageSelect && (
+                      <div className={`absolute z-10 w-full mt-2 rounded-xl shadow-2xl border overflow-hidden ${
+                        darkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-200'
+                      }`}>
+                        {languages.map((lang) => (
+                          <button
+                            key={lang.code}
+                            onClick={() => handleLanguageChange(lang.code)}
+                            className={`w-full text-left px-4 py-3 transition-colors ${
+                              darkMode ? 'hover:bg-slate-700' : 'hover:bg-blue-50'
+                            }`}
+                          >
+                            {lang.flag} {lang.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Premium Toggles */}
+                  <div className="space-y-1">
+                    <PremiumToggle
+                      enabled={darkMode}
+                      onChange={toggleDarkMode}
+                      label={t('settings.darkMode')}
+                      description="Темная тема для комфортного изучения"
+                      icon={darkMode ? <Moon size={22} className="text-yellow-400" /> : <Sun size={22} className="text-yellow-500" />}
+                      color="blue"
+                    />
+
+                    <PremiumToggle
+                      enabled={notifications}
+                      onChange={(value) => {
+                        setNotifications(value);
+                        setTimeout(saveSettings, 100);
+                      }}
+                      label={t('settings.notifications')}
+                      description="Уведомления о новых уроках и достижениях"
+                      icon={<Bell size={22} className="text-green-500" />}
+                      color="green"
+                    />
+
+                    <PremiumToggle
+                      enabled={autoPlay}
+                      onChange={(value) => {
+                        setAutoPlay(value);
+                        setTimeout(saveSettings, 100);
+                      }}
+                      label={t('settings.autoPlayAudio')}
+                      description="Автоматическое воспроизведение аудио"
+                      icon={<Volume2 size={22} className="text-red-500" />}
+                      color="red"
+                    />
+
+                    <PremiumToggle
+                      enabled={rtlMode}
+                      onChange={(value) => {
+                        setRtlMode(value);
+                        setTimeout(saveSettings, 100);
+                      }}
+                      label={t('settings.rtlMode')}
+                      description="Режим чтения справа налево для иврита"
+                      icon={<BookOpen size={22} className="text-indigo-500" />}
+                      color="purple"
+                    />
+                  </div>
                 </div>
-                <button onClick={() => toggleSetting('notifications', !notifications)} className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${notifications ? 'bg-blue-600' : 'bg-gray-300'}`}>
-                  <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${notifications ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-              </div>
 
-              {/* Auto-play Audio */}
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <Volume2 className="mr-3 text-red-500" size={22} />
-                  <span className="text-lg font-semibold">{t('settings.autoPlayAudio')}</span>
+                {/* Logout Section */}
+                <div className="pt-8 mt-8 border-t border-dashed border-opacity-30">
+                  <button
+                    onClick={handleLogout}
+                    className={`w-full flex items-center justify-center px-6 py-4 rounded-xl font-bold transition-all duration-200 ${
+                      darkMode
+                        ? 'bg-red-900/20 hover:bg-red-900/30 text-red-400 border border-red-800'
+                        : 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200'
+                    }`}
+                  >
+                    <LogOut size={20} className="mr-3" />
+                    {t('settings.logout')}
+                  </button>
                 </div>
-                <button onClick={() => toggleSetting('autoPlay', !autoPlay)} className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${autoPlay ? 'bg-blue-600' : 'bg-gray-300'}`}>
-                  <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${autoPlay ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-              </div>
-
-              {/* RTL Mode */}
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <BookOpen className="mr-3 text-indigo-500" size={22} />
-                  <span className="text-lg font-semibold">{t('settings.rtlMode')}</span>
-                </div>
-                <button onClick={() => toggleSetting('rtlMode', !rtlMode)} className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors ${rtlMode ? 'bg-blue-600' : 'bg-gray-300'}`}>
-                  <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${rtlMode ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-              </div>
-
-              {/* Logout Button */}
-              <div className="pt-4 border-t-2 border-dashed_custom">
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center justify-center px-4 py-3 bg-red-600/10 text-red-500 rounded-xl font-bold hover:bg-red-600/20 transition-colors"
-                >
-                  <LogOut size={20} className="mr-3" /> {t('settings.logout')}
-                </button>
               </div>
             </div>
           </div>

@@ -31,7 +31,7 @@ export default function Layout({ children }: LayoutProps) {
     : 'bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden';
 
   return (
-    <div className={`min-h-screen flex flex-col ${backgroundClass} transition-colors duration-500`}>
+    <div className={`min-h-screen min-h-[100dvh] flex flex-col ${backgroundClass} transition-colors duration-500`}>
       {/* Decorative background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className={`absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-10 ${
@@ -50,22 +50,30 @@ export default function Layout({ children }: LayoutProps) {
       
       {/* User info header */}
       {user && (
-        <div className={`relative z-10 px-4 py-3 border-b backdrop-blur-lg ${
+        <div className={`relative z-10 px-4 py-3 border-b backdrop-blur-lg safe-area-top ${
           darkMode 
             ? 'bg-slate-900/50 border-slate-700' 
             : 'bg-white/50 border-gray-200'
         }`}>
           <div className="flex items-center justify-between max-w-screen-xl mx-auto">
             <div className="flex items-center">
-              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center mr-2 sm:mr-3 ${
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mr-3 sm:mr-4 shadow-lg ${
                 user.role === 'rabbi' 
                   ? 'bg-gradient-to-br from-purple-500 to-purple-600' 
                   : 'bg-gradient-to-br from-blue-500 to-blue-600'
               }`}>
-                {user.role === 'rabbi' ? (
-                  <Users size={16} className="text-white sm:w-5 sm:h-5" />
+                {localStorage.getItem('userAvatar') ? (
+                  <img 
+                    src={localStorage.getItem('userAvatar')!} 
+                    alt="Avatar" 
+                    className="w-full h-full rounded-full object-cover"
+                  />
                 ) : (
-                  <User size={16} className="text-white sm:w-5 sm:h-5" />
+                {user.role === 'rabbi' ? (
+                    <Users size={20} className="text-white" />
+                ) : (
+                    <User size={20} className="text-white" />
+                )}
                 )}
               </div>
               <div>
@@ -77,43 +85,38 @@ export default function Layout({ children }: LayoutProps) {
                 </div>
               </div>
             </div>
-            <div className={`px-2 py-1 sm:px-3 rounded-full text-xs font-semibold ${
+            <div className="flex items-center space-x-3">
+              <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
               user.role === 'rabbi'
                 ? 'bg-purple-100 text-purple-800'
                 : 'bg-blue-100 text-blue-800'
             }`}>
-              <span className="hidden sm:inline">{user.nativeLanguage}</span>
-              <span className="sm:hidden">{user.nativeLanguage.slice(0, 2)}</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <NotificationCenter />
-              <div className={`text-xs px-2 py-1 rounded-full ${
-                darkMode ? 'bg-slate-700 text-slate-300' : 'bg-gray-200 text-gray-600'
-              }`}>
-                {user.role === 'rabbi' ? 'Раввин' : 'Студент'}
+                <span className="hidden sm:inline">{user.nativeLanguage}</span>
+                <span className="sm:hidden">{user.nativeLanguage.slice(0, 2)}</span>
               </div>
+              <NotificationCenter />
             </div>
           </div>
         </div>
       )}
 
-      <main className="flex-1 pb-20">
+      <main className="flex-1 pb-20 safe-area-bottom">
         {children}
       </main>
       
       <OfflineIndicator />
       
-      <nav className={`fixed bottom-0 left-0 right-0 border-t backdrop-blur-lg shadow-2xl ${
+      <nav className={`fixed bottom-0 left-0 right-0 border-t backdrop-blur-lg shadow-2xl mobile-nav safe-area-bottom ${
         darkMode 
           ? 'bg-gradient-to-r from-slate-800/90 to-slate-900/90 border-slate-600' 
           : 'bg-white/90 border-gray-200'
       }`}>
-        <div className="flex justify-around items-center py-3">
+        <div className="flex justify-around items-center py-2 sm:py-3">
           {filteredNavItems.map(({ path, icon: Icon, label }) => (
             <Link
               key={path}
               to={path}
-              className={`flex flex-col items-center py-2 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 ${
+              className={`flex flex-col items-center py-2 px-3 sm:px-4 rounded-xl transition-all duration-200 transform hover:scale-105 min-h-[44px] justify-center ${
                 location.pathname === path
                   ? darkMode 
                     ? 'text-blue-400 bg-blue-500/20 shadow-lg shadow-blue-500/25'
@@ -123,8 +126,8 @@ export default function Layout({ children }: LayoutProps) {
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 hover:shadow-lg'
               }`}
             >
-              <Icon size={24} />
-              <span className="text-xs mt-1 font-bold">{label}</span>
+              <Icon size={20} className="sm:w-6 sm:h-6" />
+              <span className="text-xs mt-1 font-bold hidden sm:block">{label}</span>
             </Link>
           ))}
         </div>

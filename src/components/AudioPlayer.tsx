@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, VolumeX, RotateCcw, FastForward } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, RotateCcw, FastForward, Download } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 interface AudioPlayerProps {
@@ -19,6 +19,7 @@ export default function AudioPlayer({ src, title, autoPlay = false, className = 
   const [isMuted, setIsMuted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [playbackRate, setPlaybackRate] = useState(1);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -48,12 +49,18 @@ export default function AudioPlayer({ src, title, autoPlay = false, className = 
       setIsLoading(false);
     };
 
+    const handleCanPlay = () => {
+      setIsLoading(false);
+      setError(null);
+    };
+
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('pause', handlePause);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('error', handleError);
+    audio.addEventListener('canplay', handleCanPlay);
 
     return () => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
@@ -62,6 +69,7 @@ export default function AudioPlayer({ src, title, autoPlay = false, className = 
       audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
+      audio.removeEventListener('canplay', handleCanPlay);
     };
   }, [autoPlay]);
 
@@ -121,6 +129,27 @@ export default function AudioPlayer({ src, title, autoPlay = false, className = 
     setCurrentTime(newTime);
   };
 
+  const changePlaybackRate = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+    const currentIndex = rates.indexOf(playbackRate);
+    const nextRate = rates[(currentIndex + 1) % rates.length];
+    
+    audio.playbackRate = nextRate;
+    setPlaybackRate(nextRate);
+  };
+
+  const downloadAudio = () => {
+    const link = document.createElement('a');
+    link.href = src;
+    link.download = title || 'audio.mp3';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
@@ -153,53 +182,37 @@ export default function AudioPlayer({ src, title, autoPlay = false, className = 
         ? 'bg-gradient-to-r from-slate-800 to-slate-900 border-slate-600' 
         : 'bg-gradient-to-r from-gray-50 to-blue-50 border-gray-200'
     } ${className}`}>
-      <audio ref={audioRef} src={src} preload="metadata" />
+      <audio 
+        ref={audioRef} 
+        src={src} 
+        preload="metadata"
+        playsInline
+        crossOrigin="anonymous"
+      />
       
       {title && (
-        <div className={`text-sm font-medium mb-3 ${
+        <div className={`text-sm font-medium mb-3 flex items-center justify-between ${
           darkMode ? 'text-slate-300' : 'text-gray-700'
         }`}>
-          {title}
+          <span className="truncate">{title}</span>
+          <button
+            onClick={downloadAudio}
+            className={`p-1 rounded-full transition-colors ${
+              darkMode 
+                ? 'hover:bg-slate-700 text-slate-400 hover:text-white' 
+                : 'hover:bg-gray-200 text-gray-500 hover:text-gray-700'
+            }`}
+            title="Скачать аудио"
+          >
+            <Download size={16} />
+          </button>
         </div>
       )}
 
-      <div className="flex items-center space-x-3">
-        {/* Play/Pause Button */}
-        <button
-          onClick={togglePlay}
-          disabled={isLoading}
-          className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg ${
-            isLoading
-              ? darkMode 
-                ? 'bg-slate-600 cursor-not-allowed' 
-                : 'bg-gray-300 cursor-not-allowed'
-              : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 hover:shadow-blue-500/25 transform hover:scale-105'
-          }`}
-        >
-          {isLoading ? (
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : isPlaying ? (
-            <Pause size={20} className="text-white ml-0.5" />
-          ) : (
-            <Play size={20} className="text-white ml-1" />
-          )}
-        </button>
-
-        {/* Skip Backward */}
-        <button
-          onClick={() => skipTime(-10)}
-          disabled={isLoading}
-          className={`p-2 rounded-full transition-colors ${
-            darkMode 
-              ? 'hover:bg-slate-700 text-slate-400 hover:text-white' 
-              : 'hover:bg-gray-200 text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <RotateCcw size={18} />
-        </button>
-
-        {/* Progress Bar */}
-        <div className="flex-1 space-y-1">
+      {/* Mobile-optimized controls */}
+      <div className="space-y-3">
+        {/* Progress bar - full width on mobile */}
+        <div className="w-full">
           <input
             type="range"
             min="0"
@@ -209,8 +222,8 @@ export default function AudioPlayer({ src, title, autoPlay = false, className = 
             disabled={isLoading}
             className={`w-full h-2 rounded-full appearance-none cursor-pointer ${
               darkMode 
-                ? 'bg-slate-600 slider-thumb-blue-dark' 
-                : 'bg-gray-300 slider-thumb-blue'
+                ? 'bg-slate-600' 
+                : 'bg-gray-300'
             }`}
             style={{
               background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(currentTime / duration) * 100}%, ${
@@ -218,7 +231,7 @@ export default function AudioPlayer({ src, title, autoPlay = false, className = 
               } ${(currentTime / duration) * 100}%, ${darkMode ? '#475569' : '#d1d5db'} 100%)`
             }}
           />
-          <div className={`flex justify-between text-xs ${
+          <div className={`flex justify-between text-xs mt-1 ${
             darkMode ? 'text-slate-400' : 'text-gray-500'
           }`}>
             <span>{formatTime(currentTime)}</span>
@@ -226,44 +239,96 @@ export default function AudioPlayer({ src, title, autoPlay = false, className = 
           </div>
         </div>
 
-        {/* Skip Forward */}
-        <button
-          onClick={() => skipTime(10)}
-          disabled={isLoading}
-          className={`p-2 rounded-full transition-colors ${
-            darkMode 
-              ? 'hover:bg-slate-700 text-slate-400 hover:text-white' 
-              : 'hover:bg-gray-200 text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <FastForward size={18} />
-        </button>
-
-        {/* Volume Control */}
-        <div className="flex items-center space-x-2">
+        {/* Main controls */}
+        <div className="flex items-center justify-center space-x-4">
+          {/* Skip Backward */}
           <button
-            onClick={toggleMute}
-            className={`p-2 rounded-full transition-colors ${
+            onClick={() => skipTime(-10)}
+            disabled={isLoading}
+            className={`p-3 rounded-full transition-all duration-200 ${
               darkMode 
                 ? 'hover:bg-slate-700 text-slate-400 hover:text-white' 
                 : 'hover:bg-gray-200 text-gray-500 hover:text-gray-700'
+            } disabled:opacity-50`}
+          >
+            <RotateCcw size={20} />
+          </button>
+
+          {/* Play/Pause Button */}
+          <button
+            onClick={togglePlay}
+            disabled={isLoading}
+            className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg ${
+              isLoading
+                ? darkMode 
+                  ? 'bg-slate-600 cursor-not-allowed' 
+                  : 'bg-gray-300 cursor-not-allowed'
+                : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 hover:shadow-blue-500/25 transform hover:scale-105'
             }`}
           >
-            {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            {isLoading ? (
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : isPlaying ? (
+              <Pause size={24} className="text-white" />
+            ) : (
+              <Play size={24} className="text-white ml-1" />
+            )}
           </button>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={isMuted ? 0 : volume}
-            onChange={handleVolumeChange}
-            className={`w-16 h-2 rounded-full appearance-none cursor-pointer ${
+
+          {/* Skip Forward */}
+          <button
+            onClick={() => skipTime(10)}
+            disabled={isLoading}
+            className={`p-3 rounded-full transition-all duration-200 ${
               darkMode 
-                ? 'bg-slate-600 slider-thumb-blue-dark' 
-                : 'bg-gray-300 slider-thumb-blue'
+                ? 'hover:bg-slate-700 text-slate-400 hover:text-white' 
+                : 'hover:bg-gray-200 text-gray-500 hover:text-gray-700'
+            } disabled:opacity-50`}
+          >
+            <FastForward size={20} />
+          </button>
+        </div>
+
+        {/* Secondary controls */}
+        <div className="flex items-center justify-between">
+          {/* Playback Rate */}
+          <button
+            onClick={changePlaybackRate}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+              darkMode 
+                ? 'bg-slate-700 hover:bg-slate-600 text-slate-300' 
+                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
             }`}
-          />
+          >
+            {playbackRate}x
+          </button>
+
+          {/* Volume Control */}
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={toggleMute}
+              className={`p-2 rounded-full transition-colors ${
+                darkMode 
+                  ? 'hover:bg-slate-700 text-slate-400 hover:text-white' 
+                  : 'hover:bg-gray-200 text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={isMuted ? 0 : volume}
+              onChange={handleVolumeChange}
+              className={`w-20 h-2 rounded-full appearance-none cursor-pointer ${
+                darkMode 
+                  ? 'bg-slate-600' 
+                  : 'bg-gray-300'
+              }`}
+            />
+          </div>
         </div>
       </div>
     </div>

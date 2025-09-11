@@ -168,6 +168,7 @@ body {
   cursor: pointer;
   border: 2px solid #ffffff;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  border: none;
 }
 
 .slider-thumb-blue-dark::-webkit-slider-thumb {
@@ -189,6 +190,65 @@ body {
   cursor: pointer;
   border: 2px solid #1e293b;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  border: none;
+}
+
+/* Улучшенные стили для аудиоплеера */
+.audio-player-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.audio-player-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  transition: all 0.2s ease;
+}
+
+.audio-player-range::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.audio-player-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.audio-player-range::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Мобильные улучшения для аудиоплеера */
+@media (max-width: 640px) {
+  .audio-player-range::-webkit-slider-thumb {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .audio-player-range::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 /* Smooth scrolling */

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Bot } from 'lucide-react';
 import { Lesson } from '../types/global';
 import WordCard from '../components/WordCard';
 import AudioPlayer from '../components/AudioPlayer';
 import InteractiveText from '../components/InteractiveText';
 import LessonQuiz from '../components/LessonQuiz';
+import AIChat from '../components/AIChat';
 import { extractUniqueWords, calculateGematria } from '../utils/hebrew';
 import { lessonService, wordService, studentWordService, translationRequestService, progressService } from '../lib/database';
 import { useAuth } from '../context/AuthContext';
@@ -21,6 +22,8 @@ export default function LessonPage() {
   const [showQuiz, setShowQuiz] = useState(false);
   const [lessonCompleted, setLessonCompleted] = useState(false);
   const [startTime] = useState(Date.now());
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+  const [aiChatMinimized, setAiChatMinimized] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -329,7 +332,14 @@ export default function LessonPage() {
           >
             <ArrowLeft size={24} className="text-slate-300" />
           </button>
-          <h1 className="text-lg sm:text-2xl font-bold text-white text-right flex-1 mr-4">{lesson.title}</h1>
+          <h1 className="text-lg sm:text-2xl font-bold text-white text-right flex-1 mx-4">{lesson.title}</h1>
+          <button
+            onClick={() => setAiChatOpen(true)}
+            className="p-3 hover:bg-slate-700 rounded-xl transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+            title="AI Помощник по уроку"
+          >
+            <Bot size={24} className="text-slate-300" />
+          </button>
         </div>
 
         <div className="mb-6 sm:mb-8">
@@ -392,6 +402,20 @@ export default function LessonPage() {
           </div>
         )}
       </div>
+      
+      <AIChat 
+        isOpen={aiChatOpen}
+        onClose={() => {
+          setAiChatOpen(false);
+          setAiChatMinimized(false);
+        }}
+        onMinimize={() => setAiChatMinimized(!aiChatMinimized)}
+        isMinimized={aiChatMinimized}
+        lessonContext={lesson ? {
+          title: lesson.title,
+          content: lesson.content
+        } : undefined}
+      />
     </div>
   );
 }

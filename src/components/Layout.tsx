@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Book, User, Users, Settings, Menu } from 'lucide-react';
+import { Book, User, Users, Settings, Menu, Bot } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import NotificationCenter from './NotificationCenter';
 import OfflineIndicator from './OfflineIndicator';
 import SidebarMenu from './SidebarMenu';
+import AIChat from './AIChat';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,8 @@ export default function Layout({ children }: LayoutProps) {
   const { darkMode } = useTheme();
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [aiChatOpen, setAiChatOpen] = useState(false);
+  const [aiChatMinimized, setAiChatMinimized] = useState(false);
 
   const navItems = [
     { path: '/', icon: Book, label: 'Курсы' },
@@ -107,6 +110,17 @@ export default function Layout({ children }: LayoutProps) {
                 <span className="hidden sm:inline">{user.nativeLanguage}</span>
                 <span className="sm:hidden">{user.nativeLanguage.slice(0, 2)}</span>
               </div>
+              <button
+                onClick={() => setAiChatOpen(true)}
+                className={`p-2 rounded-xl transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${
+                  darkMode 
+                    ? 'hover:bg-slate-700 text-slate-400 hover:text-white' 
+                    : 'hover:bg-gray-100 text-gray-600 hover:text-gray-800'
+                }`}
+                title="AI Помощник"
+              >
+                <Bot size={24} />
+              </button>
               <NotificationCenter />
             </div>
           </div>
@@ -122,6 +136,16 @@ export default function Layout({ children }: LayoutProps) {
       <SidebarMenu 
         isOpen={sidebarOpen} 
         onClose={() => setSidebarOpen(false)} 
+      />
+      
+      <AIChat 
+        isOpen={aiChatOpen}
+        onClose={() => {
+          setAiChatOpen(false);
+          setAiChatMinimized(false);
+        }}
+        onMinimize={() => setAiChatMinimized(!aiChatMinimized)}
+        isMinimized={aiChatMinimized}
       />
       
       <nav className={`fixed bottom-0 left-0 right-0 border-t backdrop-blur-lg shadow-2xl mobile-nav safe-area-bottom ${

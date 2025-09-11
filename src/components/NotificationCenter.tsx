@@ -47,8 +47,13 @@ export default function NotificationCenter() {
         console.warn('Failed to load notifications from Supabase, using demo data:', error);
       }
       
-      // Fallback to demo notifications
-      const localNotifications = JSON.parse(localStorage.getItem('demoNotifications') || '[]');
+      // Загружаем уведомления в зависимости от роли пользователя
+      let localNotifications = [];
+      if (user.role === 'rabbi') {
+        localNotifications = JSON.parse(localStorage.getItem('rabbiNotifications') || '[]');
+      } else {
+        localNotifications = JSON.parse(localStorage.getItem('demoNotifications') || '[]');
+      }
       setNotifications(localNotifications);
     } catch (error) {
       console.error('Error loading notifications:', error);
@@ -74,10 +79,13 @@ export default function NotificationCenter() {
         prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
       );
       
-      const updatedNotifications = notifications.map(n => 
+      // Обновляем правильное хранилище в зависимости от роли
+      const storageKey = user?.role === 'rabbi' ? 'rabbiNotifications' : 'demoNotifications';
+      const currentNotifications = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      const updatedNotifications = currentNotifications.map((n: any) => 
         n.id === notificationId ? { ...n, is_read: true } : n
       );
-      localStorage.setItem('demoNotifications', JSON.stringify(updatedNotifications));
+      localStorage.setItem(storageKey, JSON.stringify(updatedNotifications));
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }

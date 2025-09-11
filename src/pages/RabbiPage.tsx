@@ -40,7 +40,15 @@ export default function RabbiPage() {
     if (showTranslationRequests) {
       loadTranslationRequests();
     }
+    
+    // Загружаем уведомления раввина при открытии страницы
+    loadRabbiNotifications();
   }, [showTranslationRequests]);
+
+  const loadRabbiNotifications = () => {
+    const rabbiNotifications = JSON.parse(localStorage.getItem('rabbiNotifications') || '[]');
+    // Можно использовать эти уведомления для отображения в интерфейсе
+  };
 
   const analytics = {
     totalStudents: 24,
@@ -63,16 +71,30 @@ export default function RabbiPage() {
   const loadTranslationRequests = async () => {
     setLoading(true);
     try {
-      const requests = await translationRequestService.getPendingRequests();
-      setTranslationRequests(requests);
+      try {
+        const requests = await translationRequestService.getPendingRequests();
+        if (requests && requests.length > 0) {
+          setTranslationRequests(requests);
+          return;
+        }
+      } catch (error) {
+        console.warn('Supabase недоступен, загружаем локальные запросы:', error);
+      }
+      
+      // Загружаем локальные запросы
+      const localRequests = JSON.parse(localStorage.getItem('translationRequests') || '[]');
+      const formattedRequests = localRequests.map((req: any) => ({
+        id: req.id,
+        word: { hebrew_word: req.hebrew_word },
+        student: { name: req.student_name },
+        lesson: { title: req.lesson_title },
+        status: req.status,
+        created_at: req.created_at
+      }));
+      setTranslationRequests(formattedRequests);
     } catch (error) {
       console.error('Error loading translation requests:', error);
-      // Fallback to demo data
-      setTranslationRequests([
-        { id: 1, word: { hebrew_word: 'מְרַחֶפֶת' }, student: { name: 'Моше' }, lesson: { title: 'Берешит 1:1-5' }, status: 'pending' },
-        { id: 2, word: { hebrew_word: 'תֹהוּ' }, student: { name: 'Сара' }, lesson: { title: 'Берешит 1:1-5' }, status: 'pending' },
-        { id: 3, word: { hebrew_word: 'בָּרָא' }, student: { name: 'Давид' }, lesson: { title: 'Берешит 1:1-5' }, status: 'answered' }
-      ]);
+      setTranslationRequests([]);
     } finally {
       setLoading(false);
     }
@@ -187,12 +209,42 @@ export default function RabbiPage() {
     }
     
     try {
-      const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
-      if (userProfile.id) {
-        await translationRequestService.respond(requestId, translation, userProfile.id);
-        showSuccessMessage(`Перевод отправлен студенту!`);
-        loadTranslationRequests(); // Reload requests
+      try {
+        const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+        if (userProfile.id) {
+          await translationRequestService.respond(requestId, translation, userProfile.id);
+        }
+      } catch (error) {
+        console.warn('Failed to respond via Supabase:', error);
       }
+      
+      // Обновляем локальные запросы
+      const localRequests = JSON.parse(localStorage.getItem('translationRequests') || '[]');
+      const updatedRequests = localRequests.map((req: any) => 
+        req.id === requestId 
+          ? { ...req, status: 'answered', rabbi_response: translation, responded_at: new Date().toISOString() }
+          : req
+      );
+      localStorage.setItem('translationRequests', JSON.stringify(updatedRequests));
+      
+      // Создаем уведомление для студента
+      const request = localRequests.find((req: any) => req.id === requestId);
+      if (request) {
+        const studentNotifications = JSON.parse(localStorage.getItem('demoNotifications') || '[]');
+        const notification = {
+          id: Date.now().toString(),
+          title: 'Перевод готов! ✨',
+          message: `Раввин ответил на ваш запрос перевода слова "${request.hebrew_word}": ${translation}`,
+          type: 'success',
+          is_read: false,
+          created_at: new Date().toISOString()
+        };
+        studentNotifications.unshift(notification);
+        localStorage.setItem('demoNotifications', JSON.stringify(studentNotifications));
+      }
+      
+      showSuccessMessage(`Перевод отправлен студенту!`);
+      loadTranslationRequests(); // Reload requests
     } catch (error) {
       console.error('Error responding to translation request:', error);
       showSuccessMessage(`Перевод отправлен студенту!`);
@@ -296,15 +348,27 @@ export default function RabbiPage() {
 
           <button 
             onClick={() => setShowTranslationRequests(true)}
-            className={`w-full flex items-center ${darkMode ? 'bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 border-slate-600 hover:border-yellow-500/30' : 'bg-white hover:bg-gray-50 border-gray-200 hover:border-yellow-300'} rounded-2xl p-6 border transition-all duration-300 shadow-xl hover:shadow-yellow-500/10`}
+            className={`w-full flex items-center relative ${darkMode ? 'bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-750 hover:to-slate-850 border-slate-600 hover:border-yellow-500/30' : 'bg-white hover:bg-gray-50 border-gray-200 hover:border-yellow-300'} rounded-2xl p-6 border transition-all duration-300 shadow-xl hover:shadow-yellow-500/10`}
           >
             <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
               <MessageSquare size={28} className="text-white" />
             </div>
             <div className="text-left">
               <div className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'} text-lg`}>Запросы на перевод</div>
-              <div className={`${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>Ответить на запросы студентов ({translationRequests.filter(r => r.status === 'pending').length} новых)</div>
+              <div className={`${darkMode ? 'text-slate-400' : 'text-gray-600'}`}>
+                Ответить на запросы студентов 
+                {translationRequests.filter(r => r.status === 'pending').length > 0 && (
+                  <span className="ml-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                    {translationRequests.filter(r => r.status === 'pending').length} новых
+                  </span>
+                )}
+              </div>
             </div>
+            {translationRequests.filter(r => r.status === 'pending').length > 0 && (
+              <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-bold animate-pulse">
+                {translationRequests.filter(r => r.status === 'pending').length}
+              </div>
+            )}
           </button>
         </div>
       </div>

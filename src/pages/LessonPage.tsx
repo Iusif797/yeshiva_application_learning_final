@@ -125,11 +125,46 @@ export default function LessonPage() {
       // Create translation request
       const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
       if (userProfile.id) {
-        await translationRequestService.create(
-          userProfile.id,
-          word.id,
-          lesson?.id
-        );
+        try {
+          await translationRequestService.create(
+            userProfile.id,
+            word.id,
+            lesson?.id
+          );
+        } catch (error) {
+          console.warn('Failed to save to Supabase, saving locally:', error);
+        }
+        
+        // Всегда сохраняем локально для демо
+        const translationRequests = JSON.parse(localStorage.getItem('translationRequests') || '[]');
+        const newRequest = {
+          id: Date.now().toString(),
+          student_profile_id: userProfile.id,
+          student_name: user.name,
+          word_id: word.id,
+          hebrew_word: currentWord,
+          lesson_id: lesson?.id,
+          lesson_title: lesson?.title,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        };
+        translationRequests.push(newRequest);
+        localStorage.setItem('translationRequests', JSON.stringify(translationRequests));
+        
+        // Создаем уведомление для раввина
+        const rabbiNotifications = JSON.parse(localStorage.getItem('rabbiNotifications') || '[]');
+        const notification = {
+          id: Date.now().toString(),
+          title: 'Новый запрос на перевод! 📝',
+          message: `${user.name} запросил перевод слова "${currentWord}" из урока "${lesson?.title}"`,
+          type: 'info',
+          is_read: false,
+          created_at: new Date().toISOString(),
+          action_url: '/rabbi'
+        };
+        rabbiNotifications.unshift(notification);
+        localStorage.setItem('rabbiNotifications', JSON.stringify(rabbiNotifications));
+        
         setToast(`Запрос на перевод слова "${currentWord}" отправлен раввину!`);
         setTimeout(() => setToast(null), 3000);
       }

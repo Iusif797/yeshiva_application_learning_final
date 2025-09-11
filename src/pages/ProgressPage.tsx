@@ -171,7 +171,7 @@ export default function ProgressPage() {
   }
 
   return (
-    <div className={`p-6 pt-16 min-h-screen ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+    <div className={`p-6 pt-20 min-h-screen ${darkMode ? 'text-white' : 'text-gray-900'}`}>
       <div className="mb-8">
         <h1 className={`text-4xl font-bold mb-3 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent`}>
           Ваш прогресс

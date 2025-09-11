@@ -143,9 +143,10 @@ export default function SettingsPage() {
       </div>
 
       <div className="relative z-10 p-4 sm:p-6 pt-16 sm:pt-20">
+      <div className="relative z-10 p-4 sm:p-6 pt-20 sm:pt-24">
         {/* Success Message */}
         {savedMessage && (
-          <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-2xl shadow-2xl z-50 flex items-center backdrop-blur-lg">
+          <div className="fixed top-24 left-1/2 -translate-x-1/2 bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-2xl shadow-2xl z-50 flex items-center backdrop-blur-lg">
             <Check size={20} className="mr-2" />
             {savedMessage}
           </div>

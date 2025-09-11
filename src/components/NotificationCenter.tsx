@@ -123,7 +123,7 @@ export default function NotificationCenter() {
 
       {/* Notification Panel */}
       {isOpen && (
-        <div className={`absolute right-0 top-12 w-80 max-h-96 overflow-y-auto rounded-2xl border shadow-2xl z-50 ${
+        <div className={`absolute right-0 top-12 w-80 max-w-[90vw] max-h-96 overflow-y-auto rounded-2xl border shadow-2xl z-50 ${
           darkMode 
             ? 'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600' 
             : 'bg-white border-gray-200'

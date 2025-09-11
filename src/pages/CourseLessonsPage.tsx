@@ -89,11 +89,11 @@ export default function CourseLessonsPage() {
   }
 
   return (
-    <div className="p-6 pt-16">
+    <div className="p-6 pt-20">
       <div className="flex items-center mb-8">
         <button 
           onClick={() => navigate(-1)}
-          className="mr-4 p-3 hover:bg-slate-700 rounded-xl transition-colors"
+          className="mr-4 p-3 hover:bg-slate-700 rounded-xl transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
         >
           <ArrowLeft size={24} className="text-slate-300" />
         </button>

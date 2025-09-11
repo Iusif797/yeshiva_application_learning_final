@@ -85,7 +85,7 @@ export default function CoursesPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 pt-16 sm:pt-20 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="p-4 sm:p-6 pt-20 sm:pt-24 min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-4xl font-bold text-white mb-3 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
           Курсы изучения Торы

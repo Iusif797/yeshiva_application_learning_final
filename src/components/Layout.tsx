@@ -56,7 +56,7 @@ export default function Layout({ children }: LayoutProps) {
       
       {/* User info header */}
       {user && (
-        <div className={`relative z-10 px-4 py-3 border-b backdrop-blur-lg safe-area-top ${
+        <div className={`fixed top-0 left-0 right-0 z-50 px-4 py-3 border-b backdrop-blur-lg safe-area-top ${
           darkMode 
             ? 'bg-slate-900/50 border-slate-700' 
             : 'bg-white/50 border-gray-200'

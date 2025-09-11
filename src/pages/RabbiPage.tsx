@@ -153,8 +153,13 @@ export default function RabbiPage() {
   };
 
   const handleCreateLesson = async () => {
-    if (!newLesson.title || !newLesson.content) {
-      alert('Пожалуйста, заполните название и содержание урока');
+    if (!newLesson.title) {
+      alert('Пожалуйста, заполните название урока');
+      return;
+    }
+    
+    if (!newLesson.content && !newLesson.audioBlob) {
+      alert('Пожалуйста, добавьте содержание урока или запишите аудио');
       return;
     }
 
@@ -304,10 +309,10 @@ export default function RabbiPage() {
   };
 
   return (
-    <div className={`p-6 pt-16 min-h-screen ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+    <div className={`p-6 pt-20 min-h-screen ${darkMode ? 'text-white' : 'text-gray-900'}`}>
       {/* Success Message */}
       {successMessage && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg z-50 flex items-center">
+        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg z-50 flex items-center">
           <Check size={20} className="mr-2" />
           {successMessage}
         </div>
@@ -500,22 +505,27 @@ export default function RabbiPage() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Содержание урока (иврит)</label>
-                <p className="text-xs text-slate-400 mb-2">
-                  Введите текст вручную или используйте аудиозапись с AI транскрипцией
+                <p className="text-xs text-green-400 mb-2 flex items-center">
+                  <CheckCircle size={14} className="mr-1" />
+                  {newLesson.audioBlob ? 'Текст автоматически заполнен из аудиозаписи' : 'Введите текст вручную или используйте аудиозапись с AI транскрипцией'}
                 </p>
                 <textarea
                   value={newLesson.content}
                   onChange={(e) => setNewLesson({ ...newLesson, content: e.target.value })}
-                  placeholder="Введите текст урока на иврите..."
+                  placeholder={newLesson.audioBlob ? "Текст будет заполнен автоматически после обработки аудио..." : "Введите текст урока на иврите..."}
                   rows={6}
-                  className="w-full bg-slate-700 border border-slate-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-right"
+                  className={`w-full bg-slate-700 border border-slate-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-right ${newLesson.audioBlob ? 'opacity-75' : ''}`}
                   style={{ direction: 'rtl' }}
+                  disabled={!!newLesson.audioBlob && !newLesson.content}
                 />
               </div>
 
               {/* Audio Recorder */}
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Аудиозапись урока</label>
+                <p className="text-xs text-slate-400 mb-3">
+                  AI автоматически создаст транскрипцию, перевод и объяснения
+                </p>
                 <AudioRecorder onAudioReady={handleAudioReady} />
               </div>
 

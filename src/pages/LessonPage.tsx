@@ -353,10 +353,11 @@ export default function LessonPage() {
   }
 
   return (
-    <div className="min-h-screen min-h-[100dvh] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="p-4 sm:p-6 pt-16 sm:pt-20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="p-4 sm:p-6 pt-20 sm:pt-24">
         {toast && (
-          <div className="mb-4 rounded-xl bg-green-600/20 border border-green-600/30 text-green-300 px-4 py-3 mobile-card">
+          <div className="fixed top-24 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg z-50 flex items-center">
+            <CheckCircle size={20} className="mr-2" />
             {toast}
           </div>
         )}

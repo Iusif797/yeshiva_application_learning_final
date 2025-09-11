@@ -29,8 +29,8 @@ export default function Layout({ children }: LayoutProps) {
 
   // Filter navigation based on user type
   const filteredNavItems = user?.role === 'rabbi' 
-    ? navItems.filter(item => item.path !== '/progress')
-    : navItems.filter(item => item.path !== '/rabbi');
+    ? navItems // Раввин видит все пункты меню
+    : navItems.filter(item => item.path !== '/rabbi'); // Студенты не видят пункт "Раввин"
 
   const backgroundClass = darkMode
     ? 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden'

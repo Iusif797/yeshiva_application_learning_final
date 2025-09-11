@@ -1,19 +1,24 @@
 import { useState, useEffect } from 'react';
 import { Users, BookOpen, Plus, BarChart3, MessageSquare, X, Save, Check, TrendingUp, Award } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { lessonService, translationRequestService } from '../lib/database';
 import ProgressChart from '../components/ProgressChart';
+import AudioRecorder from '../components/AudioRecorder';
 
 interface NewLesson {
   title: string;
   content: string;
   courseId: string;
   audioUrl: string;
+  audioBlob?: Blob;
+  transcription?: string;
   youtubeUrl: string;
 }
 
 export default function RabbiPage() {
   const { darkMode } = useTheme();
+  const { user } = useAuth();
   const [showCreateLesson, setShowCreateLesson] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showTranslationRequests, setShowTranslationRequests] = useState(false);
@@ -27,8 +32,40 @@ export default function RabbiPage() {
     content: '',
     courseId: '1',
     audioUrl: '',
+    transcription: '',
     youtubeUrl: ''
   });
+
+  // Проверяем, что пользователь - раввин
+  useEffect(() => {
+    if (user && user.role !== 'rabbi') {
+      // Перенаправляем не-раввинов на главную страницу
+      window.location.href = '/';
+    }
+  }, [user]);
+
+  // Если пользователь не раввин, показываем сообщение
+  if (!user || user.role !== 'rabbi') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <X size={40} className="text-white" />
+          </div>
+          <h2 className="text-3xl font-bold text-white mb-4">Доступ запрещен</h2>
+          <p className="text-slate-300 text-lg mb-6">
+            Эта страница доступна только для раввинов
+          </p>
+          <button
+            onClick={() => window.location.href = '/'}
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl transition-all duration-200 shadow-lg"
+          >
+            Вернуться на главную
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const courses = [
     { id: '1', title: 'תורה - בראשית' },
@@ -66,6 +103,18 @@ export default function RabbiPage() {
   const showSuccessMessage = (message: string) => {
     setSuccessMessage(message);
     setTimeout(() => setSuccessMessage(''), 3000);
+  };
+
+  const handleAudioReady = (audioBlob: Blob, transcription: string) => {
+    // Создаем URL для аудио файла
+    const audioUrl = URL.createObjectURL(audioBlob);
+    setNewLesson(prev => ({
+      ...prev,
+      audioUrl,
+      audioBlob,
+      transcription,
+      content: transcription // Автоматически заполняем контент транскрипцией
+    }));
   };
 
   const loadTranslationRequests = async () => {
@@ -448,6 +497,9 @@ export default function RabbiPage() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Содержание урока (иврит)</label>
+                <p className="text-xs text-slate-400 mb-2">
+                  Введите текст вручную или используйте аудиозапись с AI транскрипцией
+                </p>
                 <textarea
                   value={newLesson.content}
                   onChange={(e) => setNewLesson({ ...newLesson, content: e.target.value })}
@@ -458,15 +510,27 @@ export default function RabbiPage() {
                 />
               </div>
 
+              {/* Audio Recorder */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">URL аудио (необязательно)</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Аудиозапись урока</label>
+                <AudioRecorder onAudioReady={handleAudioReady} />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Внешний URL аудио (необязательно)</label>
                 <input
                   type="url"
-                  value={newLesson.audioUrl}
-                  onChange={(e) => setNewLesson({ ...newLesson, audioUrl: e.target.value })}
+                  value={newLesson.audioBlob ? 'Записано с микрофона' : newLesson.audioUrl}
+                  onChange={(e) => !newLesson.audioBlob && setNewLesson({ ...newLesson, audioUrl: e.target.value })}
                   placeholder="https://example.com/audio.mp3"
+                  disabled={!!newLesson.audioBlob}
                   className="w-full bg-slate-700 border border-slate-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
                 />
+                {newLesson.audioBlob && (
+                  <p className="text-xs text-green-400 mt-1">
+                    ✓ Аудио записано и обработано AI
+                  </p>
+                )}
               </div>
 
               <div>

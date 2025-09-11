@@ -37,21 +37,21 @@ export default function ProgressPage() {
     
     setLoading(true);
     try {
-      // Load real data from localStorage
+      // Загружаем РЕАЛЬНЫЕ данные пользователя
       const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
       const lessonProgress = JSON.parse(localStorage.getItem('lessonProgress') || '{}');
       
-      // Calculate real stats from lesson progress
+      // Рассчитываем реальную статистику из прогресса уроков
       const completedLessonsFromStorage = Object.values(lessonProgress).filter(
         (progress: any) => progress.status === 'completed'
       ).length;
       
-      // Calculate total study time from lesson progress
+      // Рассчитываем реальное время изучения
       const totalStudyTimeFromStorage = Object.values(lessonProgress).reduce(
         (total: number, progress: any) => total + (progress.time_spent_minutes || 0), 0
       );
       
-      // Calculate average score from completed lessons
+      // Рассчитываем реальный средний балл
       const completedLessons = Object.values(lessonProgress).filter(
         (progress: any) => progress.status === 'completed' && progress.score
       );
@@ -59,17 +59,48 @@ export default function ProgressPage() {
         ? Math.round(completedLessons.reduce((sum: number, progress: any) => sum + progress.score, 0) / completedLessons.length)
         : 0;
       
+      // Рассчитываем streak (дни подряд)
+      const studyDates = Object.values(lessonProgress)
+        .filter((progress: any) => progress.completed_at)
+        .map((progress: any) => new Date(progress.completed_at).toDateString())
+        .sort();
+      
+      const uniqueDates = [...new Set(studyDates)];
+      let currentStreak = 0;
+      const today = new Date().toDateString();
+      
+      // Подсчитываем streak с сегодняшнего дня назад
+      for (let i = 0; i < uniqueDates.length; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        if (uniqueDates.includes(date.toDateString())) {
+          currentStreak++;
+        } else {
+          break;
+        }
+      }
+      
       const updatedStats = {
-        ...stats,
-        knownWords: userProfile.knownWords || stats.knownWords,
-        studyStreak: userProfile.studyStreak || stats.studyStreak,
-        totalLessons: Math.max(userProfile.totalLessons || stats.totalLessons, completedLessonsFromStorage),
-        completedLessons: Math.max(completedLessonsFromStorage, userProfile.totalLessons || 0),
-        totalStudyTime: Math.max(Math.round(totalStudyTimeFromStorage / 60), stats.totalStudyTime),
-        averageScore: averageScoreFromStorage || stats.averageScore
+        totalCourses: 3, // Фиксированное количество курсов
+        knownWords: userProfile.knownWords || 0, // Начинаем с нуля
+        learningWords: userProfile.learningWords || 0,
+        studyStreak: currentStreak, // Реальный streak
+        totalLessons: userProfile.totalLessons || 0,
+        completedLessons: completedLessonsFromStorage, // Реальное количество
+        totalStudyTime: Math.round(totalStudyTimeFromStorage / 60), // В часах
+        averageScore: averageScoreFromStorage || 0 // Реальный средний балл
       };
       
       setRealStats(updatedStats);
+      
+      // Обновляем профиль пользователя с реальными данными
+      const updatedProfile = {
+        ...userProfile,
+        totalLessons: completedLessonsFromStorage,
+        knownWords: updatedStats.knownWords,
+        studyStreak: currentStreak
+      };
+      localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
       
       // Пытаемся загрузить данные из Supabase если доступно
       if (userProfile.id && supabase) {

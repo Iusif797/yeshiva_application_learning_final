@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { User } from '../types/global';
+import { notificationService } from '../lib/database';
 
 interface AuthContextType {
   user: User | null;
@@ -79,9 +80,58 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = (userData: User) => {
     setUser(userData);
+    
+    // Сохраняем реальные данные пользователя
+    const userProfile = {
+      id: userData.id,
+      name: userData.name,
+      email: userData.email,
+      nativeLanguage: userData.nativeLanguage,
+      nativeLanguageCode: userData.nativeLanguage === 'Русский' ? 'ru' : 
+                         userData.nativeLanguage === 'English' ? 'en' : 
+                         userData.nativeLanguage === 'עברית' ? 'he' : 'ru',
+      studyStreak: 0, // Начинаем с нуля
+      totalLessons: 0, // Начинаем с нуля
+      knownWords: 0, // Начинаем с нуля
+      totalPoints: 0, // Начинаем с нуля
+      joinedAt: new Date().toISOString()
+    };
+    
+    localStorage.setItem('currentUser', JSON.stringify(userData));
+    localStorage.setItem('userProfile', JSON.stringify(userProfile));
+    
+    // Создаем приветственное уведомление для новых пользователей
+    createWelcomeNotification(userData);
+    
     setShowAuthModal(false);
   };
 
+  const createWelcomeNotification = async (user: User) => {
+    try {
+      if (supabase && user.id) {
+        await notificationService.create(
+          user.id,
+          'Добро пожаловать!',
+          `Добро пожаловать в Yeshiva Learning, ${user.name}! Начните свое путешествие изучения Торы и иврита.`,
+          'success'
+        );
+      }
+      
+      // Локальное уведомление как резерв
+      const notifications = JSON.parse(localStorage.getItem('demoNotifications') || '[]');
+      notifications.unshift({
+        id: Date.now().toString(),
+        title: 'Добро пожаловать!',
+        message: `Добро пожаловать в Yeshiva Learning, ${user.name}! Начните свое путешествие изучения Торы и иврита.`,
+        type: 'success',
+        is_read: false,
+        created_at: new Date().toISOString()
+      });
+      localStorage.setItem('demoNotifications', JSON.stringify(notifications));
+    } catch (error) {
+      console.error('Error creating welcome notification:', error);
+    }
+  };
   const logout = async () => {
     try {
       if (isSupabaseConfigured() && supabase) {

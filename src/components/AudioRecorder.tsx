@@ -14,7 +14,6 @@ export default function AudioRecorder({ onAudioReady, className = '' }: AudioRec
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcription, setTranscription] = useState('');
   const [aiAnalysis, setAiAnalysis] = useState<{
@@ -163,7 +162,6 @@ export default function AudioRecorder({ onAudioReady, className = '' }: AudioRec
       setAudioUrl(null);
     }
     setDuration(0);
-    setCurrentTime(0);
     setTranscription('');
     setAiAnalysis(null);
     setIsPlaying(false);
@@ -263,7 +261,6 @@ export default function AudioRecorder({ onAudioReady, className = '' }: AudioRec
                 ref={audioRef}
                 src={audioUrl || undefined}
                 onEnded={() => setIsPlaying(false)}
-                onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
                 onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
               />
             </div>

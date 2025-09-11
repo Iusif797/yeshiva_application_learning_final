@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, BookOpen, Brain, MessageSquare, X, Minimize2, Maximize2 } from 'lucide-react';
+import { Send, Bot, User, X, Minimize2, Maximize2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 

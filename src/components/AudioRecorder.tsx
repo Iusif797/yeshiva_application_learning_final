@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Play, Pause, Upload, Waveform, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { Mic, Square, Play, Pause, Upload, Waves as Waveform, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 interface AudioRecorderProps {

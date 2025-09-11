@@ -14,6 +14,7 @@ export default function AudioRecorder({ onAudioReady, className = '' }: AudioRec
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcription, setTranscription] = useState('');
   const [aiAnalysis, setAiAnalysis] = useState<{

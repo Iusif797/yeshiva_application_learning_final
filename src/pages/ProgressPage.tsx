@@ -67,7 +67,6 @@ export default function ProgressPage() {
       
       const uniqueDates = [...new Set(studyDates)];
       let currentStreak = 0;
-      const today = new Date().toDateString();
       for (let i = 0; i < uniqueDates.length; i++) {
         const date = new Date();
         date.setDate(date.getDate() - i);

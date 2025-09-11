@@ -2,7 +2,7 @@
   <!-- Background gradient -->
   <defs>
     <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
       <stop offset="50%" style="stop-color:#3b82f6;stop-opacity:1" />
       <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
     </linearGradient>
@@ -22,44 +22,58 @@
   <!-- Background circle -->
   <circle cx="256" cy="256" r="240" fill="url(#bgGradient)" filter="url(#shadow)"/>
   
-  <!-- Torah scroll/book -->
-  <g transform="translate(256, 200)">
-    <!-- Book base -->
-    <rect x="-80" y="-40" width="160" height="100" rx="8" fill="url(#bookGradient)" filter="url(#shadow)"/>
-    <rect x="-75" y="-35" width="150" height="90" rx="6" fill="#fcd34d"/>
-    
-    <!-- Book pages -->
-    <rect x="-70" y="-30" width="140" height="80" rx="4" fill="#ffffff"/>
-    <rect x="-65" y="-25" width="130" height="70" rx="3" fill="#f9fafb"/>
-    
-    <!-- Hebrew text lines -->
-    <g fill="#374151" opacity="0.8">
-      <rect x="-55" y="-15" width="110" height="3" rx="1.5"/>
-      <rect x="-55" y="-5" width="90" height="3" rx="1.5"/>
-      <rect x="-55" y="5" width="100" height="3" rx="1.5"/>
-      <rect x="-55" y="15" width="85" height="3" rx="1.5"/>
-      <rect x="-55" y="25" width="95" height="3" rx="1.5"/>
-    </g>
-    
-    <!-- Star of David -->
-    <g transform="translate(0, -80)" fill="url(#textGradient)" filter="url(#shadow)">
-      <polygon points="0,-20 17.32,10 -17.32,10" fill="url(#textGradient)"/>
-      <polygon points="0,20 -17.32,-10 17.32,-10" fill="url(#textGradient)"/>
-    </g>
+  <!-- Inner glow -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
+  
+  <!-- Book base -->
+  <rect x="180" y="180" width="152" height="200" rx="8" fill="url(#bookGradient)" filter="url(#shadow)"/>
+  
+  <!-- Book pages -->
+  <rect x="190" y="190" width="132" height="180" rx="4" fill="#ffffff"/>
+  <rect x="195" y="195" width="122" height="170" rx="2" fill="#f8fafc"/>
+  
+  <!-- Hebrew text lines (stylized) -->
+  <rect x="205" y="210" width="80" height="3" rx="1.5" fill="#1e40af"/>
+  <rect x="225" y="220" width="60" height="3" rx="1.5" fill="#1e40af"/>
+  <rect x="205" y="230" width="90" height="3" rx="1.5" fill="#1e40af"/>
+  <rect x="215" y="240" width="70" height="3" rx="1.5" fill="#1e40af"/>
+  
+  <!-- Hebrew letter ב (stylized) -->
+  <g transform="translate(205, 260)">
+    <rect x="0" y="0" width="4" height="40" rx="2" fill="#3b82f6"/>
+    <rect x="0" y="0" width="25" height="4" rx="2" fill="#3b82f6"/>
+    <rect x="0" y="18" width="20" height="4" rx="2" fill="#3b82f6"/>
+    <rect x="0" y="36" width="25" height="4" rx="2" fill="#3b82f6"/>
+    <rect x="21" y="4" width="4" height="14" rx="2" fill="#3b82f6"/>
+    <rect x="16" y="22" width="4" height="14" rx="2" fill="#3b82f6"/>
   </g>
   
-  <!-- Hebrew letters ת (Tav) and ל (Lamed) stylized -->
-  <g transform="translate(256, 350)" fill="url(#textGradient)" filter="url(#shadow)">
-    <!-- Stylized Hebrew letters representing Torah Learning -->
-    <path d="M-40,-20 L-40,20 M-50,-20 L-30,-20 M-40,-20 L-40,20" stroke="url(#textGradient)" stroke-width="6" fill="none" stroke-linecap="round"/>
-    <path d="M10,-20 L10,20 M10,20 L30,0" stroke="url(#textGradient)" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <!-- Hebrew letter ר (stylized) -->
+  <g transform="translate(240, 260)">
+    <rect x="0" y="0" width="4" height="40" rx="2" fill="#8b5cf6"/>
+    <rect x="0" y="0" width="20" height="4" rx="2" fill="#8b5cf6"/>
+    <rect x="16" y="4" width="4" height="16" rx="2" fill="#8b5cf6"/>
+  </g>
+  
+  <!-- Hebrew letter א (stylized) -->
+  <g transform="translate(270, 260)">
+    <rect x="8" y="0" width="4" height="20" rx="2" fill="#10b981"/>
+    <rect x="0" y="20" width="4" height="20" rx="2" fill="#10b981"/>
+    <rect x="16" y="20" width="4" height="20" rx="2" fill="#10b981"/>
+    <rect x="4" y="18" width="12" height="4" rx="2" fill="#10b981"/>
   </g>
   
   <!-- Decorative elements -->
-  <g opacity="0.3">
-    <circle cx="120" cy="120" r="4" fill="#fbbf24"/>
-    <circle cx="392" cy="140" r="6" fill="#8b5cf6"/>
-    <circle cx="100" cy="380" r="5" fill="#3b82f6"/>
-    <circle cx="420" cy="360" r="4" fill="#fbbf24"/>
+  <circle cx="150" cy="150" r="3" fill="rgba(255,255,255,0.6)"/>
+  <circle cx="370" cy="160" r="2" fill="rgba(255,255,255,0.4)"/>
+  <circle cx="140" cy="350" r="2.5" fill="rgba(255,255,255,0.5)"/>
+  <circle cx="380" cy="340" r="2" fill="rgba(255,255,255,0.3)"/>
+  
+  <!-- Crown element (representing learning/wisdom) -->
+  <g transform="translate(320, 140)">
+    <polygon points="0,20 8,0 16,10 24,0 32,20 16,15" fill="#fbbf24"/>
+    <circle cx="8" cy="5" r="2" fill="#f59e0b"/>
+    <circle cx="16" cy="2" r="2.5" fill="#f59e0b"/>
+    <circle cx="24" cy="5" r="2" fill="#f59e0b"/>
   </g>
 </svg>

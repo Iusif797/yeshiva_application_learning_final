@@ -26,35 +26,6 @@ export default function NotificationCenter() {
     if (user && isOpen) {
       loadNotifications();
     }
-    
-    // Add demo notifications if none exist
-    if (user && isOpen) {
-      const existingNotifications = localStorage.getItem('demoNotifications');
-      if (!existingNotifications) {
-        const demoNotifications = [
-          {
-            id: '1',
-            title: 'Добро пожаловать!',
-            message: 'Добро пожаловать в приложение изучения иврита и Торы',
-            type: 'success' as const,
-            is_read: false,
-            created_at: new Date().toISOString()
-          },
-          {
-            id: '2',
-            title: 'Новый урок доступен',
-            message: 'Раввин добавил новый урок в курс "Тора - Берешит"',
-            type: 'info' as const,
-            is_read: false,
-            created_at: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
-          }
-        ];
-        localStorage.setItem('demoNotifications', JSON.stringify(demoNotifications));
-        setNotifications(demoNotifications);
-      } else {
-        setNotifications(JSON.parse(existingNotifications));
-      }
-    }
   }, [user, isOpen]);
 
   const loadNotifications = async () => {
@@ -77,22 +48,11 @@ export default function NotificationCenter() {
       }
       
       // Fallback to demo notifications
-      const demoNotifications = JSON.parse(localStorage.getItem('demoNotifications') || '[]');
-      setNotifications(demoNotifications);
+      const localNotifications = JSON.parse(localStorage.getItem('demoNotifications') || '[]');
+      setNotifications(localNotifications);
     } catch (error) {
       console.error('Error loading notifications:', error);
-      // Even if everything fails, show demo notifications
-      const demoNotifications = [
-        {
-          id: '1',
-          title: 'Система работает',
-          message: 'Приложение успешно загружено и готово к использованию',
-          type: 'success' as const,
-          is_read: false,
-          created_at: new Date().toISOString()
-        }
-      ];
-      setNotifications(demoNotifications);
+      setNotifications([]);
     } finally {
       setLoading(false);
     }

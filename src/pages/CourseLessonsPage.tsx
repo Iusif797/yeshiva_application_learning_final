@@ -18,11 +18,25 @@ export default function CourseLessonsPage() {
 
   const loadLessons = async () => {
     try {
-      const data = await lessonService.getByCourseId(id!);
-      if (data.length > 0) {
-        setLessons(data);
+      // Сначала пытаемся загрузить из Supabase
+      try {
+        const data = await lessonService.getByCourseId(id!);
+        if (data.length > 0) {
+          setLessons(data);
+          return;
+        }
+      } catch (error) {
+        console.warn('Supabase недоступен, загружаем локальные уроки:', error);
+      }
+      
+      // Загружаем уроки, созданные раввином локально
+      const localLessons = JSON.parse(localStorage.getItem('lessons') || '[]');
+      const courseLessons = localLessons.filter((lesson: any) => lesson.course_id === id);
+      
+      if (courseLessons.length > 0) {
+        setLessons(courseLessons);
       } else {
-        // Fallback to demo data
+        // Демо данные только если нет реальных уроков
         const demoLessons: Lesson[] = [
           {
             id: 'a0e1b2c3-d4e5-f6a7-b8c9-d0e1f2a3b4c5',

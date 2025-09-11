@@ -140,16 +140,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
           created_at: new Date().toISOString()
         };
 
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-        localStorage.setItem('userProfile', JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          nativeLanguage: formData.nativeLanguage,
-          nativeLanguageCode: languages.find(l => l.name === formData.nativeLanguage)?.code || 'ru',
-          studyStreak: 0,
-          totalLessons: 0,
-          knownWords: 0
-        }));
 
         onAuthSuccess(userData);
       }

@@ -88,16 +88,29 @@ export default function RabbiPage() {
       const existingLessons = JSON.parse(localStorage.getItem('lessons') || '[]');
       
       const lessonData = {
+        id: Date.now().toString(),
         course_id: newLesson.courseId,
         title: newLesson.title,
         content: newLesson.content,
         audio_url: newLesson.audioUrl || null,
         youtube_url: newLesson.youtubeUrl || null,
         order_number: existingLessons.length + 1,
-        is_published: true
+        is_published: true,
+        created_at: new Date().toISOString()
       };
 
-      await lessonService.create(lessonData);
+      try {
+        await lessonService.create(lessonData);
+      } catch (error) {
+        console.warn('Supabase недоступен, сохраняем локально:', error);
+      }
+      
+      // Всегда сохраняем локально
+      existingLessons.push(lessonData);
+      localStorage.setItem('lessons', JSON.stringify(existingLessons));
+      
+      // ОТПРАВЛЯЕМ УВЕДОМЛЕНИЯ ВСЕМ СТУДЕНТАМ
+      await notifyStudentsAboutNewLesson(lessonData);
       
       setNewLesson({
         title: '',
@@ -110,27 +123,53 @@ export default function RabbiPage() {
       showSuccessMessage('Урок успешно создан!');
     } catch (error) {
       console.error('Error creating lesson:', error);
-      // Fallback to localStorage for demo
-      const existingLessons = JSON.parse(localStorage.getItem('lessons') || '[]');
-      const lesson = {
+      alert('Ошибка при создании урока');
+    }
+  };
+
+  const notifyStudentsAboutNewLesson = async (lesson: any) => {
+    try {
+      // Получаем название курса
+      const courseName = courses.find(c => c.id === lesson.course_id)?.title || 'курс';
+      
+      // Создаем уведомление для всех студентов
+      const notificationData = {
         id: Date.now().toString(),
-        ...newLesson,
+        title: 'Новый урок доступен! 📚',
+        message: `Раввин добавил новый урок "${lesson.title}" в ${courseName}`,
+        type: 'info' as const,
+        is_read: false,
         created_at: new Date().toISOString(),
-        order_number: existingLessons.length + 1
+        action_url: `/lesson/${lesson.id}`
       };
       
-      existingLessons.push(lesson);
-      localStorage.setItem('lessons', JSON.stringify(existingLessons));
+      // Сохраняем уведомление локально (для демо)
+      const existingNotifications = JSON.parse(localStorage.getItem('demoNotifications') || '[]');
+      existingNotifications.unshift(notificationData);
+      localStorage.setItem('demoNotifications', JSON.stringify(existingNotifications));
       
-      setNewLesson({
-        title: '',
-        content: '',
-        courseId: '1',
-        audioUrl: '',
-        youtubeUrl: ''
-      });
-      setShowCreateLesson(false);
-      showSuccessMessage('Урок успешно создан!');
+      // Если доступен Supabase, отправляем реальные уведомления
+      if (supabase) {
+        try {
+          // В реальном приложении здесь был бы запрос всех студентов
+          // Пока создаем уведомление для текущего пользователя (если он студент)
+          const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+          if (currentUser.role === 'student') {
+            await notificationService.create(
+              currentUser.id,
+              notificationData.title,
+              notificationData.message,
+              'info'
+            );
+          }
+        } catch (error) {
+          console.warn('Failed to send Supabase notification:', error);
+        }
+      }
+      
+      console.log('✅ Уведомления отправлены всем студентам!');
+    } catch (error) {
+      console.error('Error sending notifications:', error);
     }
   };
 

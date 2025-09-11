@@ -3,6 +3,8 @@ import { Users, BookOpen, Plus, BarChart3, MessageSquare, X, Save, Check, Trendi
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { lessonService, translationRequestService } from '../lib/database';
+import { supabase } from '../lib/supabase';
+import { notificationService } from '../lib/database';
 import ProgressChart from '../components/ProgressChart';
 import AudioRecorder from '../components/AudioRecorder';
 
@@ -83,7 +85,8 @@ export default function RabbiPage() {
   }, [showTranslationRequests]);
 
   const loadRabbiNotifications = () => {
-    const rabbiNotifications = JSON.parse(localStorage.getItem('rabbiNotifications') || '[]');
+    // Load rabbi notifications for future use
+    JSON.parse(localStorage.getItem('rabbiNotifications') || '[]');
     // Можно использовать эти уведомления для отображения в интерфейсе
   };
 
